@@ -1,0 +1,98 @@
+# Operating System
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE and Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.c9/
+*.sublime-project
+*.sublime-workspace
+
+# Build and Compilation
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dylib
+*.exe
+*.out
+*.app
+*.elf
+*.hex
+*.bin
+
+# Logs and Temporary Files
+*.log
+*.bak
+*.backup
+*.tmp
+*.temp
+*.cache
+*.swp
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# MATLAB/Octave
+*.asv
+*.mex*
+*.p
+
+# Simulation and CAD
+*.sim
+*.raw
+*.out
+*.lst
+*.ckt
+*.sch~
+*.kicad_pcb-bak
+
+# SPICE Output
+*.tran
+*.ac
+*.op
+
+# Documentation Build
+docs/_build/
+site/
+
+# Temporary project files
+.DS_Store
+*.swp
+*.swo
+*~
+.#*
