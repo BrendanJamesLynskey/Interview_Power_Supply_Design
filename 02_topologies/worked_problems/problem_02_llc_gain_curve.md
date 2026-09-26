@@ -107,7 +107,7 @@ Use n = 3.7 → practical winding: use 37:10 turns ratio (Np=37, Ns=10) or 7.5:2
 
 More practically, accept n = 4 with slight boost above unity gain. Proceed with n = 4, acknowledging the operating point is at fn < 1 (below fr for M > 1).
 
-**Proceed with n = 4, fr = 120 kHz, operate at fn = 0.92 at full load nominal (M = 1.08):**
+**Proceed with n = 4, fr = 120 kHz, target M = 1.08 at full load nominal (Step 5 checks whether the tank can deliver it):**
 
 Q at full load (n=4):
 ```
@@ -117,56 +117,56 @@ Q_max = Lr × 2π × fr / Rac
       → to be calculated in Step 3 after choosing Lr
 ```
 
-For now, choose Q_max = 0.5 as a reasonable starting point (moderate Q, decent gain range).
+For now, choose Q_max = 0.5 as a starting point (Step 5 shows it leaves too little gain with k = 7).
 
 ---
 
 ## Step 3 — Gain Curve Tabulation
 
-**FHA voltage gain formula:**
+**FHA voltage gain formula** (fn = fsw/fr, Q = √(Lr/Cr)/Rac, k = Lm/Lr):
 
 ```
-M(fn, Q, k) = k × fn² / √[(k×fn²×(k+1)×(fn²-1))² + (k×fn² - (k+1)×(fn²-1))²×Q²(k+1)²]
+M(fn, Q, k) = k × fn² / √[((k+1) × fn² − 1)² + k² × fn² × (fn² − 1)² × Q²]
 ```
 
 With k = 7, computing M for various fn and Q values:
 
-**At Q = 0.5 (light load, 50W):**
+**At Q = 0.5 (≈ full load in this design — see Step 4):**
 
 | fn = fsw/fr | M (gain) | Note |
 |------------|---------|------|
-| 0.60 | 2.89 | Below fm — ZVS may be lost |
-| 0.70 | 1.96 | High gain region |
-| 0.80 | 1.43 | Below resonance |
-| 0.85 | 1.26 | Below resonance |
-| 0.90 | 1.16 | Approaching fr |
-| 0.95 | 1.07 | Just below fr |
+| 0.60 | 1.09 | Below the gain peak (fn ≈ 0.63) — ZVS lost |
+| 0.70 | 1.08 | Near the gain peak |
+| 0.80 | 1.06 | Below resonance |
+| 0.85 | 1.04 | Below resonance |
+| 0.90 | 1.03 | Approaching fr |
+| 0.95 | 1.01 | Just below fr |
 | 1.00 | 1.00 | At resonance (always, for any Q) |
-| 1.05 | 0.95 | Above resonance |
-| 1.10 | 0.90 | Above resonance |
-| 1.20 | 0.82 | Well above resonance |
-| 1.50 | 0.68 | High frequency |
+| 1.05 | 0.99 | Above resonance |
+| 1.10 | 0.97 | Above resonance |
+| 1.20 | 0.94 | Well above resonance |
+| 1.50 | 0.86 | High frequency |
 
-**At Q = 0.8 (full load, 500W):**
+**At Q = 0.8 (heavier load, ≈ 780 W):**
 
 | fn | M (gain) | Note |
 |----|---------|------|
-| 0.80 | 1.31 | Below resonance |
-| 0.85 | 1.18 | Below resonance |
-| 0.90 | 1.09 | Approaching fr |
-| 0.95 | 1.03 | Just below fr |
+| 0.80 | 1.01 | Below resonance |
+| 0.85 | 1.02 | Below resonance (near peak) |
+| 0.90 | 1.02 | Approaching fr |
+| 0.95 | 1.01 | Just below fr |
 | 1.00 | 1.00 | At resonance |
-| 1.05 | 0.97 | Above resonance |
-| 1.10 | 0.94 | Above resonance |
-| 1.20 | 0.88 | Well above resonance |
+| 1.05 | 0.98 | Above resonance |
+| 1.10 | 0.97 | Above resonance |
+| 1.20 | 0.92 | Well above resonance |
 
 **At Q = 2.0 (overload or very heavy load):**
 
 | fn | M (gain) |
 |----|---------|
-| 0.90 | 1.02 |
+| 0.90 | 0.95 |
 | 1.00 | 1.00 |
-| 1.10 | 0.88 |
+| 1.10 | 0.91 |
 
 **Key observations from gain table:**
 1. At fn = 1.0: M = 1.00 for ALL Q values — the curves all pass through this point.
@@ -180,7 +180,7 @@ With k = 7, computing M for various fn and Q values:
 
 **Design target:**
 - fr = 120 kHz
-- Q at full load ≈ 0.5 (conservative — allows gain range)
+- Q at full load ≈ 0.5 (starting point — see Step 5)
 - k = 7
 
 **Calculate Lr from Q and fr:**
@@ -253,44 +253,42 @@ At Vin = 380V: M = 54 × 4 × 2 / 380 = 432/380 = 1.137
 At Vin = 400V: M = 432/400 = 1.080
 At Vin = 420V: M = 432/420 = 1.029
 
-**Finding frequencies for these gains at Q=0.5 (light load) and Q=0.514 (full load):**
+**Finding frequencies for these gains at Q=0.514 (full load):**
 
-Using the gain table and interpolation:
+Solving the FHA formula (k = 7, Q = 0.514):
 
-At M = 1.080, Q = 0.514 (full load, nominal Vin):
-From table: M=1.09 at fn=0.90 and M=1.03 at fn=0.95 for Q=0.5
-Interpolating for Q=0.514 → fn ≈ 0.93 → fsw = 0.93 × 124 = 115 kHz
+The full-load gain curve peaks at only **M ≈ 1.08, at fn ≈ 0.63**. Below that peak the tank input turns capacitive and ZVS is lost.
 
-At M = 1.137, Q = 0.514 (full load, Vin_min = 380V):
-From table: this is a larger gain → must operate at lower fn (further below resonance)
-fn ≈ 0.87 → fsw = 0.87 × 124 = 108 kHz (still well above fm = 43.8 kHz)
+At M = 1.029 (full load, Vin_max = 420V):
+fn ≈ 0.90 → fsw = 0.90 × 124 = 111 kHz
 
-At M = 1.029, Q = 0.514 (full load, Vin_max = 420V):
-From table: M≈1.03 at fn≈0.95 → fsw = 0.95 × 124 = 118 kHz
+At M = 1.080 (full load, nominal Vin):
+reached only at the gain peak, fn ≈ 0.63–0.66 → fsw ≈ 80 kHz — no margin at all
+
+At M = 1.137 (full load, Vin_min = 380V):
+**unreachable** — the peak gain (1.08) is below the required 1.137
+
+**Design consequence:** k = 7 with Q = 0.514 cannot regulate 54 V at full load below about 400 V. A lower k or Q is needed. For example, k = 4 at the same Q peaks at M ≈ 1.29 (fn ≈ 0.57), and k = 7 needs Q ≤ 0.4 for a peak of ≈ 1.21.
 
 **Light load frequency (10% load, Q_light ≈ 0.05):**
 
-At very light load, the gain curve rises sharply. To maintain M = 1.08:
-fn_light ≈ 1.05–1.10 → fsw_light = 1.07 × 124 = 133 kHz (slightly above resonance)
-
-Actually at very light load (Q → 0), M approaches:
+At light load (Q → 0) the gain below resonance is:
 ```
-M_max(fn<1, Q=0) = 1 + 1/k (at fm) = 1 + 1/7 = 1.143 (but this is the peak)
+M ≈ k × fn² / ((k+1) × fn² − 1)
 ```
-For M = 1.08 at light load, any fn gives M=1.08 with appropriate D (but LLC is FM control).
-At Q→0: M=1.08 → fn can be found from: M = k/(k+1-(1/fn²)) approximately → fn ≈ 0.97
+For M = 1.08: fn² = 1.08 / (1.08 × 8 − 7) = 0.659 → fn ≈ 0.81 → fsw ≈ 101 kHz
 
-**Summary of frequency range:**
+**Summary of frequency range (k = 7, Q = 0.514 as designed):**
 
 | Condition | fn | fsw (kHz) |
 |-----------|-----|----------|
-| Vin=380V, full load (Q=0.51) | 0.87 | 108 |
-| Vin=400V, full load (Q=0.51) | 0.93 | 115 |
-| Vin=420V, full load (Q=0.51) | 0.96 | 119 |
-| Vin=400V, 10% load (Q≈0.05) | 0.97 | 120 |
+| Vin=380V, full load (Q=0.51) | — | unreachable (peak gain 1.08) |
+| Vin=400V, full load (Q=0.51) | ≈0.65 | ≈80 (at the gain peak) |
+| Vin=420V, full load (Q=0.51) | 0.90 | 111 |
+| Vin=400V, 10% load (Q≈0.05) | 0.81 | 101 |
 | Vin=400V, burst threshold | 1.50 | 186 |
 
-The converter operates between 108 kHz and ~130 kHz in normal operation, entering burst mode above 130 kHz. This is a very narrow frequency range — a consequence of the tight Vin regulation from the PFC stage.
+With these tank values the gain range needed from the PFC bus (1.03–1.14) is not available at full load — the tank must be redesigned with more gain headroom before the frequency range can be fixed.
 
 ---
 
@@ -303,37 +301,39 @@ The converter operates between 108 kHz and ~130 kHz in normal operation, enterin
 
 **Magnetising current peak:**
 ```
-Imag_peak = Vin / (4 × fsw × Lm) = 380 / (4 × 108e3 × 350e-6)
-           = 380 / 151.2 = 2.51 A
+The magnetising inductance sees ±Vin/2 (half-bridge), so:
+Imag_peak = (Vin/2) / (4 × fsw × Lm) = Vin / (8 × fsw × Lm)
+          = 400 / (8 × 101e3 × 350e-6)   [10% load, fsw ≈ 101 kHz]
+          = 400 / 282.8 = 1.41 A
 ```
 
 **Switch capacitance requirement:**
 
-For a 600V GaN FET with Coss = 120 pF (effective at 190V half of 380V bus):
+For a 600V GaN FET with Coss = 120 pF (effective), two Coss must be swung through Vin:
 ```
-E_Coss = 2 × Coss × (Vin)² = 2 × 120e-12 × (380)²
-       = 2 × 120e-12 × 144,400
-       = 34.7 µJ
+E_Coss = 2 × ½ × Coss × (Vin)² = 120e-12 × (400)²
+       = 120e-12 × 160,000
+       = 19.2 µJ
 ```
 
 **ZVS energy from Lm:**
 ```
-E_Lm = 0.5 × Lm × Imag_peak² = 0.5 × 350e-6 × 2.51²
-     = 0.5 × 350e-6 × 6.30
-     = 1.1 mJ = 1100 µJ
+E_Lm = 0.5 × Lm × Imag_peak² = 0.5 × 350e-6 × 1.41²
+     = 0.5 × 350e-6 × 1.99
+     = 348 µJ
 ```
 
 **ZVS check:**
 ```
-E_Lm = 1100 µJ >> E_Coss = 34.7 µJ   → ZVS achieved with large margin at minimum load
+E_Lm = 348 µJ >> E_Coss = 19.2 µJ   → ZVS achieved with large margin at minimum load
 ```
 
 This confirms that the LLC maintains ZVS at all load levels, including very light load — because Imag is load-independent (it depends only on Lm and fsw).
 
 **Dead time requirement:**
 ```
-t_dead_min = 4 × Coss × Vin / Imag_peak = 4 × 120e-12 × 380 / 2.51
-           = 182.4e-9 / 2.51 = 72.7 ns
+t_dead_min = 2 × Coss × Vin / Imag_peak = 2 × 120e-12 × 400 / 1.41
+           = 96e-9 / 1.41 = 68 ns
 ```
 
 Select dead time = 100 ns (provides margin and is practical for gate driver timing).
@@ -353,13 +353,13 @@ Select dead time = 100 ns (provides margin and is practical for gate driver timi
 | Magnetising inductance Lm | 350 µH |
 | Full-load Q | 0.514 |
 | Operating gain range | 1.03–1.14 |
-| Operating frequency range | 108–130 kHz |
-| Burst mode threshold | >130 kHz |
-| ZVS margin at min load | 32× (excellent) |
+| Operating frequency range | not achievable at full load, Vin < 400 V — tank needs more gain (see Step 5) |
+| Burst mode threshold | fn ≈ 1.5 (186 kHz) |
+| ZVS margin at min load | 18× (excellent) |
 | Dead time | 100 ns |
 
 **Key design cross-checks:**
-1. fm = 43.8 kHz is well below the minimum operating frequency (108 kHz) — ZVS is safe.
-2. Frequency range is narrow (108–130 kHz) — simplified EMI filter design.
+1. fm = 43.8 kHz is well below the operating frequencies, but at full load the gain peak (fn ≈ 0.63, ≈ 78 kHz) is the real ZVS boundary — and it sits where nominal-Vin operation would need to be.
+2. The peak gain at full load (1.08) is below the 1.14 needed at Vin = 380 V — reduce k or Q (Step 5).
 3. Large ZVS margin allows GaN FETs without concern about losing ZVS.
 4. Q < 1 at full load provides reasonable gain curve shape and regulation range.

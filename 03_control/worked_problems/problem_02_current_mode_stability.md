@@ -178,7 +178,7 @@ mc_optimal = m2/2 = Vout / (2L) = 12 / (2 × 20µH) = 0.3 A/µs
 
 2. **Transient response:** With mc = m2/2, the current loop responds to control signal changes in a way that is optimally damped — neither too slow (over-compensated) nor ringing (under-compensated).
 
-3. **Mathematical basis:** The sampled-data model of the current loop shows that the current loop bandwidth is maximised at mc = m2/2 without causing subharmonic oscillation. The current loop gain has a pole at z = -1 exactly at the Nyquist frequency (fs/2), which means the current ripple correction happens in exactly one cycle.
+3. **Mathematical basis:** From the perturbation gain A = -(m2 - mc)/(m1 + mc), mc = m2/2 keeps |A| < 1 for every D < 1 (at nominal D = 0.25, A = -0.3/2.1 = -0.14). It is not deadbeat: one-cycle correction (A = 0) needs mc = m2, at the cost of a slower, more voltage-mode-like current loop.
 
 **Practical ramp generation circuit:**
 
@@ -209,12 +209,12 @@ When mc > m2: (m2 - mc) becomes negative → A > 0 → perturbations no longer o
 
 When mc >> m1, m2:
 ```
-A ≈ -(mc/mc) = -1   → marginally stable again (but now at Nyquist frequency due to the -1 sign)
+A ≈ -(-mc/mc) = +1   → perturbations decay ever more slowly (no oscillation)
 ```
 
 As mc → ∞:
 ```
-A → -1  [purely oscillatory at fs/2, borderline unstable in magnitude]
+A → +1  [the current loop fades away — voltage-mode-like behaviour]
 ```
 
 **Effect on current loop bandwidth:**
@@ -257,7 +257,7 @@ mc_max ≤ m2   [to preserve current-mode advantages]
 | Minimum stable          | 0.268     | Marginally stable   | 1.0        | High      |
 | Optimal (mc = m2/2)     | 0.3       | Stable              | 0.82       | Optimal   |
 | Moderate overcomp.      | 0.6       | Stable              | 0.0        | Reduced   |
-| Excessive               | 3.0       | Stable              | 0.73 (neg) | Very low  |
+| Excessive               | 3.0       | Stable              | 0.78 (A > 0) | Very low  |
 
 ---
 

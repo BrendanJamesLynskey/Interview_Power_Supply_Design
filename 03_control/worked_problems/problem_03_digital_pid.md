@@ -85,7 +85,7 @@ Total loop phase at 30 kHz:
 PM = 180° - 129.45° = 50.55° > 45° ✓ (just barely — acceptable for this example)
 ```
 
-To increase PM to 55°, move fz lower or add a derivative term. For this problem, a PD-I structure (derivative on measurement) improves PM without HF noise amplification.
+Moving fz lower can recover at most the remaining 0.95°, so reaching 55° needs a derivative term (or less loop delay). For this problem, a PD-I structure (derivative on measurement) improves PM without HF noise amplification.
 
 **Use a PI controller with fz = 500 Hz and verify:**
 ```
@@ -136,20 +136,20 @@ Prewarped angular frequency:
           = (2/2.5µs) × tan(2π × 30kHz × 2.5µs/2)
           = 800,000 × tan(π × 0.075)
           = 800,000 × tan(0.2356 rad)
-          = 800,000 × 0.2439
-          = 195,120 rad/s
+          = 800,000 × 0.2401
+          = 192,063 rad/s
 ```
 
 The prewarped analog zero frequency:
 ```
 ω_z_prewarp = ω_z × (ω_prewarp / ω_c)
-            = 3142 × (195,120 / 188,496)
-            = 3142 × 1.0351
-            = 3252 rad/s
-            → fz_prewarp = 517 Hz
+            = 3142 × (192,063 / 188,496)
+            = 3142 × 1.0189
+            = 3201 rad/s
+            → fz_prewarp = 510 Hz
 ```
 
-(Small correction — the prewarping only matters for precision near Nyquist; at 30 kHz with fs=400 kHz, the correction is minor: 3.5%. For this problem, proceed with unprewarped values for clarity.)
+(Small correction — the prewarping only matters for precision near Nyquist; at 30 kHz with fs=400 kHz, the correction is minor: 1.9%. For this problem, proceed with unprewarped values for clarity.)
 
 **Bilinear substitution:** `s → (2/Ts) × (z-1)/(z+1)`
 
@@ -219,18 +219,18 @@ Compute G(z) using bilinear transform of Gplant(s):
 ```
 Gplant(s) = R_load / (1 + s × R_load × C) = 0.66 / (1 + s × 0.66 × 220µF)
            = 0.66 / (1 + s × 0.1452 ms)
-           = 0.66 × ω_p / (s + ω_p)    where ω_p = 6912 rad/s (= 2π × 1099 Hz)
+           = 0.66 × ω_p / (s + ω_p)    where ω_p = 6887 rad/s (= 2π × 1096 Hz)
 
 Bilinear: s → (2/Ts)(z-1)/(z+1) = 800k(z-1)/(z+1)
 
-G(z) = 0.66 × 6912 / (800000(z-1)/(z+1) + 6912)
-     = 0.66 × 6912 × (z+1) / (800000(z-1) + 6912(z+1))
-     = 4561.9(z+1) / ((800000 + 6912)z + (-800000 + 6912))
-     = 4561.9(z+1) / (806912z - 793088)
-     = 0.00565(z+1) / (z - 0.9828)
+G(z) = 0.66 × 6887 / (800000(z-1)/(z+1) + 6887)
+     = 0.66 × 6887 × (z+1) / (800000(z-1) + 6887(z+1))
+     = 4545.4(z+1) / ((800000 + 6887)z + (-800000 + 6887))
+     = 4545.4(z+1) / (806887z - 793113)
+     = 0.00563(z+1) / (z - 0.9829)
 ```
 
-This matches the expected discrete first-order system with a pole near z = 1 (at 0.9828, i.e., inside the unit circle ✓).
+This matches the expected discrete first-order system with a pole near z = 1 (at 0.9829, i.e., inside the unit circle ✓).
 
 ---
 
@@ -238,15 +238,15 @@ This matches the expected discrete first-order system with a pole near z = 1 (at
 
 **Why anti-windup is critical here:**
 
-During startup, Vout rises from 0V to 3.3V. During this time, error e[n] is large (3.3V/0.806mV = 4096 ADC counts). The integrator accumulates:
+During startup, Vout rises from 0V to 3.3V. During this time, error e[n] is large (setpoint 1.65V/0.806mV = 2048 ADC counts with Vfb = 0). The integrator accumulates:
 
 Without anti-windup:
 ```
-After 1ms: u_integrated ≈ a0 × error × samples = 41.46 × 4096 × 400 = 68 million counts
+After 1ms: u_integrated ≈ (a0 + a1) × error × samples = 0.324 × 2048 × 400 ≈ 265,000 counts
 ```
 This vastly exceeds the DPWM range of 0–4095.
 
-When Vout reaches 3.3V and error drops to 0, the integrator still holds ~68 million. The output duty cycle remains at maximum for a very long time while the integrator unwinds → severe overshoot.
+When Vout reaches 3.3V and error drops to 0, the integrator still holds ~265,000. The output duty cycle remains at maximum for a very long time while the integrator unwinds → severe overshoot.
 
 **Implementation with back-calculation anti-windup:**
 
@@ -293,8 +293,8 @@ uint16_t controller_update(uint16_t adc_count) {
     // 2. Proportional term
     float p_term = KP * error;
 
-    // 3. Integral state (accumulated from previous cycles)
-    float i_term = integral_state;
+    // 3. Integral term: previous state + bilinear increment (Ki*Ts/2)*(e[n] + e[n-1])
+    float i_term = integral_state + KI_TS_HALF * (error + prev_error);
 
     // 4. Compute unsaturated output
     //    Difference equation: u[n] = u[n-1] + a0*e[n] + a1*e[n-1]
@@ -306,14 +306,11 @@ uint16_t controller_update(uint16_t adc_count) {
     if (u_sat > DUTY_MAX) u_sat = DUTY_MAX;
     if (u_sat < DUTY_MIN) u_sat = DUTY_MIN;
 
-    // 6. Update integral with difference equation + anti-windup back-calculation
-    //    Next integral = current integral + a0*e[n] + a1*e[n-1] + antiwindup
-    //    Note: a0*e[n] + a1*e[n-1] represents the bilinear integral increment
-    float integral_increment = A0 * error + A1 * prev_error;
+    // 6. Update integral with anti-windup back-calculation
+    //    (p + i form: u[n] - u[n-1] = a0*e[n] + a1*e[n-1], as in the difference equation)
     float antiwindup_correction = ANTIWINDUP_GAIN * (u_sat - u_unsat);
 
-    integral_state += integral_increment - p_term + antiwindup_correction;
-    // Note: we subtract p_term because i_term = u - p_term (integral is total minus proportional)
+    integral_state = i_term + antiwindup_correction;
 
     // Clamp integral to prevent accumulator from going wildly out of range
     if (integral_state > DUTY_MAX) integral_state = DUTY_MAX;
@@ -344,10 +341,9 @@ uint16_t pid_simple(uint16_t adc) {
     // Saturate
     float u_sat = u_new < DUTY_MIN ? DUTY_MIN : (u_new > DUTY_MAX ? DUTY_MAX : u_new);
 
-    // Anti-windup: if saturated, correct the integral before storing
-    // correction = antiwindup_gain * (saturated - unsaturated)
-    integral = u_sat - A0 * e;  // Store what u would need to be (without this cycle's p term)
-    integral += ANTIWINDUP_GAIN * (u_sat - u_new);  // Back-calculation correction
+    // Anti-windup: store the saturated output. In this velocity form u[n-1] is the
+    // state, so clamping it stops the integral winding up beyond the DPWM range.
+    integral = u_sat;
 
     prev_err = e;
     return (uint16_t)u_sat;
@@ -382,16 +378,16 @@ Choose Q-formats based on value ranges:
 | Variable         | Range              | Q-format | Bits Needed |
 |------------------|--------------------|----------|-------------|
 | error (ADC cnt)  | -4096 to +4096     | Q0       | 13-bit int  |
-| A0 coefficient   | 41.46              | Q7 (×128)| int ≈ 5313  |
-| A1 coefficient   | -41.14             | Q7       | int ≈ -5267 |
+| A0 coefficient   | 41.46              | Q7 (×128)| int ≈ 5307  |
+| A1 coefficient   | -41.14             | Q7       | int ≈ -5266 |
 | integral_state   | 0 to 4095          | Q7       | int 0-524160|
 | duty cycle output| 0 to 4095          | Q0       | 12-bit int  |
 
 **Fixed-point coefficient representation:**
 ```c
 // Q7 format: value × 128 (7 fractional bits)
-#define A0_Q7    ((int32_t)(41.46f * 128))   // = 5307
-#define A1_Q7    ((int32_t)(-41.14f * 128))  // = -5266
+#define A0_Q7    ((int32_t)(41.46f * 128))   // = 5306 (cast truncates 5306.9; round to get 5307)
+#define A1_Q7    ((int32_t)(-41.14f * 128))  // = -5265 (truncates -5265.9; round to get -5266)
 
 // Integral state in Q7 (wider accumulator to prevent rounding)
 static int32_t integral_q7 = 0;  // 32-bit accumulator, Q7 format
@@ -423,22 +419,22 @@ int16_t pid_fixed_point(int16_t adc_count) {
 
 1. **Intermediate overflow:** Multiplying Q7 × Q0 gives Q7. With A0=5307 and error=4096: product = 21.7 million — fits in int32 (max ~2.1 billion). Safe here.
 
-2. **Coefficient rounding:** A0_Q7 = 41.46 × 128 = 5307.0 → stored as 5307 exactly. Error = 0.00039% — negligible.
+2. **Coefficient rounding:** A0_Q7 = 41.46 × 128 = 5306.9 → the cast truncates to 5306 (round to 5307 instead). The integral gain is A0 + A1, a small difference of two large numbers: 5306 − 5265 = 41 vs. the ideal 41.5 (0.32 vs 0.324 counts/sample, ~1% low) — acceptable here, but check the difference, not just each coefficient.
 
-3. **Integral precision at small errors:** When error = 1 ADC count, integral increment = 5307 (Q7) per sample. After 7 bits of shift, this is 41 counts of duty change per sample for a 1-count error. At 400 kHz sampling and 30 kHz crossover, this is appropriate.
+3. **Integral precision at small errors:** When the error steps to 1 ADC count, the first sample adds A0 = 5307 (Q7), i.e. 41 counts of duty (the proportional step); thereafter each sample adds A0 + A1 ≈ 41 (Q7) = 0.32 counts. The Q7 fraction bits are what let this small integral increment accumulate.
 
 4. **Verify no limit cycle:**
    ```
    Minimum duty step = 1 DPWM count
    Minimum Vout change per DPWM step = Vin × (1/4096) = 12/4096 = 2.93 mV
-   ADC resolution = 0.806 mV/count
-   2.93 mV > 0.806 mV → 3.6 ADC counts per DPWM step
+   ADC resolution = 0.806 mV/count at Vfb = Vout/2 → 1.61 mV of Vout per count
+   2.93 mV > 1.61 mV → 1.8 ADC counts per DPWM step
 
-   This means 3-4 ADC counts of error produces the same DPWM output → limit cycling possible.
-   Solution: use sigma-delta DPWM or accept 3-count voltage regulation band.
+   The DPWM step is coarser than the ADC step → no DPWM level lands in the zero-error bin → limit cycling possible.
+   Solution: use sigma-delta DPWM or accept a 2-count voltage regulation band.
 
-   Alternatively: verify DPWM resolution requirement:
-   N_dpwm > N_adc + log2(Vin/Vout) = 12 + log2(12/3.3) = 12 + 1.86 = 13.86 → 14-bit DPWM needed
+   Alternatively: verify DPWM resolution requirement (DPWM step < ADC step, referred to Vout):
+   Vin / 2^N_dpwm < 1.61 mV → N_dpwm > log2(12 / 1.61 mV) = 12.86 → 13-bit DPWM needed
    A 12-bit DPWM at 12V/3.3V = 3.6:1 ratio will limit cycle — use dithering.
    ```
 
@@ -487,4 +483,4 @@ The ramp rate of the integral equals Ki × Ts — the bilinear discretization co
 | Anti-windup gain    | 0.00786/sample | = ωz × Ts = Ts/Ti                 |
 | Duty cycle range    | 0–4095         | 12-bit DPWM                        |
 | Estimated PM        | ~50°           | Verify on hardware Bode plot       |
-| DPWM limit cycle    | Possible       | Use dithering or 14-bit DPWM      |
+| DPWM limit cycle    | Possible       | Use dithering or 13-bit DPWM      |

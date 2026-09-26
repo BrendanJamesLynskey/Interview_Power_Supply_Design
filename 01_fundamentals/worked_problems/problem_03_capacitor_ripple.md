@@ -82,16 +82,11 @@ Cout_min = ΔIL / (8 × fsw × ΔV_target)
 Allocate ΔV_target = 12 mV to capacitive ripple, 3 mV margin for ESR/ESL:
 ```
 Cout_min = 3.0 / (8 × 300e3 × 0.012)
-         = 3.0 / 2,880,000
-         = 1.04 µF × 1000 = 1042 nF → 1.04 µF
+         = 3.0 / 28,800
+         = 104 µF
 ```
 
-Wait — this seems too small. Let us recheck:
-```
-Cout_min = 3.0 / (8 × 300,000 × 0.012) = 3.0 / 2,880,000 = 1.04 µF
-```
-
-That is correct. 1.04 µF would achieve 12 mV ripple from capacitance alone at 300 kHz with 3A ripple. However, we need adequate capacitance for transient response as well.
+104 µF would achieve 12 mV ripple from capacitance alone at 300 kHz with 3A ripple. However, we need adequate capacitance for transient response as well.
 
 **Transient response requirement:**
 
@@ -109,7 +104,7 @@ For ΔVout_transient ≤ 50 mV (typical transient spec):
 Cout_transient ≥ 5 × 3.44e-6 / (2 × 0.050) = 17.2e-6 / 0.1 = 172 µF
 ```
 
-The transient requirement (172 µF) dominates over the steady-state ripple requirement (1.04 µF).
+The transient requirement (172 µF) dominates over the steady-state ripple requirement (104 µF).
 
 **Capacitor selection:**
 
@@ -173,17 +168,19 @@ N_caps = 80 mΩ / 5 mΩ = 16 capacitors
 16× 100 µF electrolytics in parallel:
 - Capacitance: 1600 µF (far more than needed)
 - ESR: 5 mΩ (just meets requirement)
-- ESL: ~10 nH / 16 = 0.625 nH in parallel (still significant at 300 kHz)
+- ESL: ~10 nH / 16 = 0.625 nH in parallel (small at 300 kHz: 1.2 mΩ reactance)
 - PCB area: 16 large through-hole caps — impractical
 
 **ESL spike with 16 electrolytics:**
 ```
-ΔV_ESL = 0.625e-9 × 1.45e6 = 906 mV   ← enormous — ESL dominates at 300 kHz
+ΔV_ESL = 0.625e-9 × 1.45e6 = 0.91 mV   ← small — ESR is the limiting term
 ```
 
-This demonstrates a fundamental issue: at 300 kHz, the parasitic inductance (ESL) of electrolytic capacitors produces voltage spikes that easily exceed the ESR ripple. Electrolytic capacitors are not suitable as the primary output filter at frequencies above approximately 100 kHz without ceramic bypass capacitors.
+Total with 16 caps: ΔV_C (0.8 mV) + ΔV_ESR (15 mV) + ΔV_ESL (0.9 mV) ≈ 17 mV — still above target.
 
-**Conclusion for Option B:** Standard electrolytics fail at 300 kHz due to ESR and ESL. Not recommended as sole output filter.
+This demonstrates a fundamental issue: at 300 kHz, the ESR of electrolytic capacitors forces an impractical number of parts in parallel. Electrolytic capacitors are not suitable as the primary output filter at frequencies above approximately 100 kHz without ceramic bypass capacitors.
+
+**Conclusion for Option B:** Standard electrolytics fail at 300 kHz due to ESR. Not recommended as sole output filter.
 
 Low-ESR electrolytic (Nichicon UHW or Panasonic FM series) have ESR ≈ 15–30 mΩ per 100µF cap — still requires many parallel parts and ceramic bypass. Not a viable single-type solution.
 
@@ -199,7 +196,7 @@ The optimum practical solution combines bulk polymer capacitors for capacitance 
 - Voltage coefficient: near zero (unlike ceramics)
 - Temperature stability: good (-55°C to +105°C)
 - No electrolyte degradation
-- Typical parts: Panasonic EEVFK, KEMET T520/T521 series, Würth WE-SUPD
+- Typical parts: KEMET T520/T521 series, Würth WCAP-PSLC
 
 **Design approach:**
 - Polymer capacitors handle bulk capacitance (transient and low-frequency ripple)
@@ -207,7 +204,7 @@ The optimum practical solution combines bulk polymer capacitors for capacitance 
 
 **Polymer bulk capacitor selection:**
 
-Use 2× 100 µF, 4V polymer (e.g., Panasonic EEVFK0G101P):
+Use 2× 100 µF, 4V polymer:
 - ESR: 15 mΩ each → 7.5 mΩ in parallel
 - ESL: 4 nH each → 2 nH in parallel
 - Effective capacitance: 200 µF (stable vs. voltage and temperature)
@@ -224,34 +221,34 @@ Use 3× 22 µF, 4V X5R, 0805:
 Total Cout = 200 + 54 = 254 µF
 Combined ESR: polymer path (7.5 mΩ / 200 µF) in parallel with ceramic path (0.67 mΩ / 54 µF)
 
-For high-frequency ripple (at fsw = 300 kHz), ceramics dominate due to much lower impedance:
+At fsw = 300 kHz, compare the two branch impedances:
 ```
 Z_ceramic = √(ESR² + (1/(2π × f × C))²) at 300kHz
           = √(0.00067² + (1/(2π×300e3×54e-6))²)
-          = √(4.5e-7 + 9.7e-9)
-          ≈ 0.00067 Ω  (ESR-dominated)
+          = √(4.5e-7 + 9.65e-5)
+          ≈ 0.0098 Ω  (capacitance-dominated: X_C = 9.8 mΩ)
 
 Z_polymer  = √(0.0075² + (1/(2π×300e3×200e-6))²)
-           = √(5.6e-5 + 7.0e-10)
-           ≈ 0.0075 Ω  (also ESR-dominated)
+           = √(5.6e-5 + 7.0e-6)
+           ≈ 0.0080 Ω  (ESR-dominated)
 ```
 
-Ceramic impedance is 11× lower → ceramics carry ~11× more ripple current than polymer at 300 kHz.
+The two impedances are similar, so the ripple current splits roughly evenly (the polymer carries slightly more). The ceramics do not take over at 300 kHz: 54 µF is too little capacitance to be low-impedance at fsw.
 
-**Effective ESR at 300 kHz:**
+**Effective impedance at 300 kHz** (the branches combine as complex impedances, not magnitudes):
 ```
-ESR_eff = Z_ceramic || Z_polymer ≈ Z_ceramic / 12 × Z_polymer (parallel)
-        ≈ 0.00067 × 0.0075 / (0.00067 + 0.0075)
-        ≈ 5.0e-6 / 0.00817
-        ≈ 0.61 mΩ
+Z_eff = Z_ceramic || Z_polymer
+      = (0.67 − j9.82) mΩ || (7.5 − j2.65) mΩ
+      = (5.25 − j3.25) mΩ,   |Z_eff| ≈ 6.2 mΩ
 ```
 
 **Verify ripple (Option C):**
+
+Z_eff already contains the capacitance, so ΔV_C and ΔV_ESR cannot be added separately. Driving the two branches with the 3 A triangular ripple current (time-domain calculation) gives:
 ```
-ΔV_C   = 3.0 / (8 × 300e3 × 254e-6)   = 3.0 / 609.6  = 4.9 mV
-ΔV_ESR = 3.0 × 0.00061                  = 1.8 mV
-ΔV_ESL = 0.17e-9 × 1.45e6               = 0.25 mV   [ceramic path dominates]
-Total  ≈ 4.9 + 1.8 + 0.25               = 6.95 mV   ← PASS
+ESL neglected:                          ΔVout ≈ 12.8 mV pk-pk
+With the stated ESLs (D = 0.36):        ΔVout ≈ 16 mV pk-pk
+                                        ← MARGINAL against the 15 mV target
 ```
 
 **Transient check (Option C):**
@@ -269,9 +266,9 @@ Total  ≈ 4.9 + 1.8 + 0.25               = 6.95 mV   ← PASS
 |-----------|------------------------|------------------------------|-------------------------------|
 | Capacitors | 7× 47µF X5R 1210 | 16× 100µF electrolytic | 2× 100µF polymer + 3× 22µF MLCC |
 | Total Cout | 196 µF | 1600 µF | 254 µF |
-| ESR at 300kHz | 0.43 mΩ | 5 mΩ | 0.61 mΩ |
+| ESR at 300kHz | 0.43 mΩ | 5 mΩ | 5.2 mΩ (magnitude 6.2 mΩ) |
 | ESL at 300kHz | 0.7 nH | 0.625 nH | 0.17 nH |
-| ΔVout steady-state | 8.7 mV | Fails (>100mV) | 6.95 mV |
+| ΔVout steady-state | 8.7 mV | ≈ 17 mV — fails | ≈ 13–16 mV — marginal |
 | Transient ΔV (5A step) | 43.9 mV | Requires simulation | 33.9 mV |
 | Temperature stability | Moderate (X5R) | Poor at cold | Excellent |
 | Cost (approx) | $1.05 | $3.20 + layout issues | $2.40 |
@@ -287,9 +284,9 @@ The impedance of each capacitor type vs. frequency:
    - Ceramics have high impedance (small absolute capacitance)
 
 2. At switching frequency (300 kHz):
-   - Ceramics dominate (lowest ESR)
+   - Ceramic and polymer branches share the ripple (54 µF of ceramic is still capacitive at 300 kHz)
    - Polymer still useful (lower ESR than electrolytic)
-   - Electrolytic has too high ESL-related impedance
+   - Electrolytic has too high ESR
 
 3. At high frequency (>10 MHz, from MOSFET switching edges):
    - Only small ceramics (0402/0603) have low enough ESL

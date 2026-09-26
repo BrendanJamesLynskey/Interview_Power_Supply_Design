@@ -146,10 +146,10 @@ Using Bmax = 0.30 T, Jmax = 4 A/mm², ku = 0.35:
 Ap = (2 × 104e-6) / (0.30 × 4e6 × 0.35)
    = 208e-6 / 420,000
    = 4.95 × 10⁻¹⁰ m⁴
-   = 0.495 cm⁴
+   = 495 mm⁴ = 0.0495 cm⁴
 ```
 
-This corresponds to approximately an EE25 or ETD29 core for a wound inductor, or a 5mm × 5mm SMD power inductor footprint.
+This is small: an ETD29 core offers Ae × Aw = 7,220 mm⁴ (0.72 cm⁴), about 15× more, so a wound inductor needs only a small core. It is consistent with a 5mm × 5mm SMD power inductor footprint.
 
 **Practical implication:**
 
@@ -273,9 +273,9 @@ Revised short-circuit margin: 8.17 / 8.88 = 0.92 — this means the inductor **c
 
 | Criterion | Weight | Inductor A (8080) | Inductor B (6666) |
 |-----------|--------|------------------|------------------|
-| Isat margin (nominal) | 25% | 1.90× — Excellent | 1.76× — Good |
+| Isat margin (nominal) | 25% | 1.90× — Excellent | 1.77× — Good |
 | Isat at temperature | 25% | 8.17A vs 8.88A — Marginal | Similar — Marginal |
-| DCR loss | 20% | 0.70–0.92 W — Good | 1.18–1.55 W — Poor |
+| DCR loss | 20% | 0.70–0.92 W — Good | 1.18–1.72 W — Poor |
 | Thermal (surface temp) | 20% | 112°C — OK | 144°C — FAIL |
 | Size | 10% | 8080 — Larger | 6666 — Smaller |
 

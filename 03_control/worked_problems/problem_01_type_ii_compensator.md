@@ -71,10 +71,10 @@ Above 20 kHz:        flat (0 dB/dec) recovering toward 0°
 
 DC gain: 20 × log(R_load) = 20 × log(1.1) = 0.83 dB ≈ 0 dB (approximated)
 At fc = 10 kHz:
-|Gplant(j·2π·10kHz)| = R_load / √(1 + (10k/1.45k)²)
-                      = 1.1 / √(1 + 47.6)
-                      = 1.1 / 6.97
-                      = 0.158 = -16 dB
+|Gplant(j·2π·10kHz)| = R_load × √(1 + (10k/20k)²) / √(1 + (10k/1.45k)²)
+                      = 1.1 × 1.118 / √(1 + 47.6)
+                      = 1.230 / 6.97
+                      = 0.176 = -15.1 dB
 
 Phase at fc = 10 kHz (pole contribution):
 φ_pole = -arctan(10k/1.45k) = -arctan(6.9) = -81.8°
@@ -166,7 +166,7 @@ PM = 180° - 98.5° = 81.5° > 60° ✓  (exceeds requirement)
 
 **Calculate each factor at 10 kHz:**
 
-Plant gain: -16 dB → |Gplant| = 0.158
+Plant gain: -15.1 dB → |Gplant| = 0.176
 
 At 10 kHz, with zero at 3 kHz and pole at 20 kHz, the Type II compensator mid-band gain is:
 ```
@@ -195,15 +195,15 @@ Let K_dc = K for the integrator gain constant.
 |Gcomp| × |GPWM| × |Gplant| × |H| = 1
 
 |Gcomp| = 1 / (|GPWM| × |Gplant| × |H|)
-         = 1 / (2 × 0.158 × 0.242)
-         = 1 / 0.0765
-         = 13.07  (= +22.3 dB)
+         = 1 / (2 × 0.176 × 0.242)
+         = 1 / 0.0852
+         = 11.7  (= +21.4 dB)
 ```
 
 **Solving for K:**
 ```
-K × 0.934 = 13.07
-K = 13.98 ≈ 14
+K × 0.934 = 11.7
+K = 12.5
 ```
 
 ---
@@ -262,11 +262,11 @@ Choose R1 = 10 kΩ (standard input resistor).
 fz = 1 / (2π × R2 × C1)   → need R2 first
 
 Calculate R2 from mid-band gain:
-Mid-band gain = R2 / R1 ≈ 13.07 (for the integrator + zero + pole topology)
+Mid-band gain = R2 / R1 = K ≈ 12.5 (for the integrator + zero + pole topology)
 Actually for the inverting integrator topology:
   Mid-band gain ≈ (1/(2π × fz × C1)) / R1 = R2 / R1
 
-So R2 = 13.07 × R1 = 13.07 × 10kΩ = 130.7 kΩ → choose R2 = 130 kΩ (standard)
+So R2 = 12.5 × R1 = 12.5 × 10kΩ = 125 kΩ → choose R2 = 130 kΩ (nearest E24; slightly more gain)
 ```
 
 **Calculate C1:**
@@ -326,9 +326,9 @@ Recalculate loop gain at fc = 10 kHz with actual component values:
 
 **Total loop gain at 10 kHz:**
 ```
-|T(10kHz)| = 12.4 × 2 × 0.158 × 0.242
-           = 12.4 × 0.0765
-           = 0.95 ≈ 0 dB ✓  (within rounding error of component standard values)
+|T(10kHz)| = 12.4 × 2 × 0.176 × 0.242
+           = 12.4 × 0.0852
+           = 1.06 ≈ 0 dB ✓  (within rounding error of component standard values)
 ```
 
 **Phase margin verification:**
@@ -348,9 +348,9 @@ Achieved PM = 82.7° >> 60° requirement ✓
 **Gain margin verification:**
 To find GM, locate the phase crossover frequency (where total phase = -180°):
 
-At higher frequencies, plant phase approaches -90° + 90° (ESR zero) - 90° = -90° (asymptotic).
+At higher frequencies, plant phase approaches -90° + 90° (ESR zero) = 0° (asymptotic).
 Compensator phase approaches -90° + 90° - 90° = -90° (asymptotic).
-Total asymptotic phase = -180° — meaning the phase crossover is at very high frequency or does not occur.
+Total asymptotic phase = -90° — in this simplified model the phase never reaches -180°.
 
 Since the total phase approaches but may not cross -180° in this configuration (beneficial ESR zero), the gain margin is effectively infinite or very large. The gain must drop below 0 dB before phase reaches -180°.
 
@@ -383,7 +383,7 @@ Before building hardware, verify in LTspice or MATLAB:
 
 ## Common Mistakes to Avoid
 
-1. **Forgetting the feedback divider H:** The loop gain includes H = Vref/Vout. Omitting it overestimates the compensator gain needed, resulting in under-compensation.
+1. **Forgetting the feedback divider H:** The loop gain includes H = Vref/Vout. Omitting it underestimates the compensator gain needed, resulting in under-compensation.
 
 2. **Using nominal ESR at room temperature:** ESR of electrolytic capacitors varies 3:1 from -40°C to +85°C. The ESR zero frequency shifts proportionally. Verify PM across temperature.
 

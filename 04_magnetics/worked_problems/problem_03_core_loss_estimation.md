@@ -25,7 +25,7 @@ I_pk = 4.0 × 1.1 = 4.4 A  (including 20% ripple, half-ripple added)
 
 **Two candidate cores (toroid):**
 
-**Core A: Kool Mµ powder core (Magnetics Inc. 77439-A7)**
+**Core A: Kool Mµ 60µ powder toroid (illustrative 77 mm OD size — not a specific catalogue part)**
 ```
 OD = 77.0 mm, ID = 48.0 mm, HT = 29.0 mm
 Ve = 78.1 cm³, Ae = 5.22 cm²
@@ -164,25 +164,25 @@ feq = (2 × fsw/π²) / (D × (1-D))
     = 13,172 / 0.196
     = 67,200 Hz
 
-Pv_iGSE = Cm_KM × feq^(α-1) × ΔB^β × fsw
-         = 3.49×10⁻³ × (67,200)^0.46 × (0.0406)^2.00 × 65,000
+Pv_iGSE = Cm_KM × feq^(α-1) × B_half^β × fsw
+         = 3.49×10⁻³ × (67,200)^0.46 × (0.0203)^2.00 × 65,000
 
 (67,200)^0.46 = e^(0.46 × ln(67200)) = e^(0.46 × 11.115) = e^5.113 = 165.9
 
-(0.0406)^2.00 = 1.648×10⁻³
+(0.0203)^2.00 = 4.12×10⁻⁴
 
-Pv_iGSE = 3.49×10⁻³ × 165.9 × 1.648×10⁻³ × 65,000
-         = 3.49×10⁻³ × 165.9 × 107.1
-         = 3.49×10⁻³ × 17,772
-         = 62.0 mW/cm³
+Pv_iGSE = 3.49×10⁻³ × 165.9 × 4.12×10⁻⁴ × 65,000
+         = 3.49×10⁻³ × 165.9 × 26.8
+         = 3.49×10⁻³ × 4,444
+         = 15.5 mW/cm³
 
-Note: iGSE with ΔB (peak-to-peak) should be compared to Steinmetz with B_peak (half-swing).
-The iGSE gives a fundamentally different result because it accounts for the waveform shape and the actual frequency relative to D.
+Note: this equivalent-frequency form, like classical Steinmetz, takes the half-swing B_half = ΔB/2 (the Steinmetz parameters are fitted to sinusoidal peak flux).
+At D = 0.268, feq (67.2 kHz) is close to fsw, so the waveform correction is small here — the result matches the sinusoidal estimate.
 ```
 
 **Total core loss — Core A (Kool Mµ):**
 ```
-P_core_A = Pv × Ve = 62.0 mW/cm³ × 78.1 cm³ = 4.84 W
+P_core_A = Pv × Ve = 15.5 mW/cm³ × 78.1 cm³ = 1.21 W
 ```
 
 ---
@@ -219,19 +219,19 @@ B_half_swing = 50.3 mT
 ```
 feq = 67,200 Hz  (same as before, same D)
 
-Pv_iGSE = Cm_N87 × feq^(α-1) × ΔB^β × fsw
-         = 1.90×10⁻⁴ × (67,200)^0.58 × (0.1006)^2.65 × 65,000
+Pv_iGSE = Cm_N87 × feq^(α-1) × B_half^β × fsw
+         = 1.90×10⁻⁴ × (67,200)^0.58 × (0.0503)^2.65 × 65,000
 
 (67,200)^0.58 = e^(0.58 × 11.115) = e^6.447 = 630.9
 
-(0.1006)^2.65 = e^(2.65 × ln(0.1006)) = e^(2.65 × (-2.297)) = e^(-6.087) = 2.27×10⁻³
+(0.0503)^2.65 = e^(2.65 × ln(0.0503)) = e^(2.65 × (-2.990)) = e^(-7.923) = 3.62×10⁻⁴
 
-Pv_iGSE = 1.90×10⁻⁴ × 630.9 × 2.27×10⁻³ × 65,000
-         = 1.90×10⁻⁴ × 630.9 × 147.6
-         = 1.90×10⁻⁴ × 93,121
-         = 17.7 mW/cm³
+Pv_iGSE = 1.90×10⁻⁴ × 630.9 × 3.62×10⁻⁴ × 65,000
+         = 1.90×10⁻⁴ × 630.9 × 23.5
+         = 1.90×10⁻⁴ × 14,860
+         = 2.8 mW/cm³
 
-P_core_B = 17.7 × 78 = 1380 mW = 1.38 W
+P_core_B = 2.8 × 78 = 220 mW = 0.22 W
 ```
 
 ---
@@ -245,9 +245,9 @@ P_core_B = 17.7 × 78 = 1380 mW = 1.38 W
 | N (turns)           | 57              | 24                   |
 | B_DC_bias           | 73.9 mT         | 183 mT               |
 | ΔB (peak-to-peak)   | 40.6 mT         | 100.6 mT             |
-| Pv (iGSE)           | 62.0 mW/cm³     | 17.7 mW/cm³          |
-| P_core              | 4.84 W          | 1.38 W               |
-| P_core / Pout       | 1.61%           | 0.46%                |
+| Pv (iGSE)           | 15.5 mW/cm³     | 2.8 mW/cm³           |
+| P_core              | 1.21 W          | 0.22 W               |
+| P_core / Pout       | 0.40%           | 0.07%                |
 
 **Why N87 ferrite wins on core loss:**
 - N87 has much lower Steinmetz Cm and steeper β → losses drop faster with lower ΔB
@@ -275,10 +275,10 @@ DCR_B (N87, N=24): Use AWG 14 (d=1.628mm, Aw=2.081mm²):
 
 | Metric          | Core A (Kool Mµ) | Core B (N87 Ferrite) |
 |-----------------|-----------------|----------------------|
-| P_core          | 4.84 W          | 1.38 W               |
+| P_core          | 1.21 W          | 0.22 W               |
 | P_Cu            | 1.46 W          | 0.24 W               |
-| P_total         | 6.30 W          | 1.62 W               |
-| η_impact        | 2.1%            | 0.54%                |
+| P_total         | 2.67 W          | 0.46 W               |
+| η_impact        | 0.89%           | 0.15%                |
 
 **N87 ferrite is clearly superior** in total losses at 65 kHz for this application. However:
 
@@ -295,25 +295,25 @@ For a production design targeting highest efficiency with robust saturation beha
 
 ## Part E: Thermal Implications
 
-**Core A (Kool Mµ) at P_total = 6.30 W:**
+**Core A (Kool Mµ) at P_total = 2.67 W:**
 ```
 Surface area of toroid ≈ π × OD × HT + π/4 × (OD² - ID²) × 2
 ≈ π × 77×29 + π/4 × (77²-48²) × 2 mm²
 ≈ 7021 + π/4 × (5929-2304) × 2 mm²
 ≈ 7021 + 5695 mm² = 12,716 mm² = 127.2 cm²
 
-ΔT ≈ 450 × P_total / A_surface = 450 × 6.30 / 127.2 = 22.3°C
+ΔT ≈ 450 × P_total / A_surface = 450 × 2.67 / 127.2 = 9.4°C
 
-At 50°C ambient: T_core = 72.3°C — acceptable (within Kool Mµ capabilities)
+At 50°C ambient: T_core = 59.4°C — acceptable (within Kool Mµ capabilities)
 ```
 
-**Core B (N87 ferrite) at P_total = 1.62 W:**
+**Core B (N87 ferrite) at P_total = 0.46 W:**
 ```
-ΔT ≈ 450 × 1.62 / 127.2 = 5.7°C
+ΔT ≈ 450 × 0.46 / 127.2 = 1.6°C
 
-T_core = 55.7°C — excellent. Well within N87's optimal temperature range (80-100°C for minimum loss).
+T_core = 51.6°C — excellent. Well within N87's optimal temperature range (80-100°C for minimum loss).
 
-At only 55.7°C, the N87 is actually running somewhat cool — its core loss is slightly higher than at 100°C (N87 has a loss minimum around 80-100°C). But the overall losses are still much lower than Kool Mµ.
+At only 51.6°C, the N87 is actually running somewhat cool — its core loss is slightly higher than at 100°C (N87 has a loss minimum around 80-100°C). But the overall losses are still much lower than Kool Mµ.
 ```
 
 ---
@@ -340,8 +340,8 @@ This integration is typically done numerically. The result is that the average c
 A simplified estimate: multiply the peak-ΔB loss by approximately 0.5–0.6 to get the average loss over the AC cycle.
 
 ```
-P_core_A_avg ≈ 4.84 × 0.55 = 2.66 W
-P_core_B_avg ≈ 1.38 × 0.55 = 0.76 W
+P_core_A_avg ≈ 1.21 × 0.55 = 0.67 W
+P_core_B_avg ≈ 0.22 × 0.55 = 0.12 W
 ```
 
 This makes the ferrite option even more attractive in practice.
@@ -355,7 +355,7 @@ STEINMETZ (sinusoidal): Pv = Cm × f^α × B_peak^β  [W/cm³]
 
 iGSE (switching waveform):
   feq = (2 × fsw/π²) / (D × (1-D))   [for triangular wave]
-  Pv = Cm × feq^(α-1) × ΔB^β × fsw   [ΔB = peak-to-peak flux density]
+  Pv = Cm × feq^(α-1) × (ΔB/2)^β × fsw   [ΔB = peak-to-peak flux density; use the half-swing]
 
 TOTAL CORE LOSS: P_core = Pv × Ve
 

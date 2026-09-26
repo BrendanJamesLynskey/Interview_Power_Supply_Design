@@ -103,7 +103,7 @@ Average secondary current (equal to Iout = 30W/12V = 2.5A in steady state).
 **Core selection — EE25 (N87 ferrite, given):**
 - Ae = 52 mm² = 52 × 10⁻⁶ m²
 - Aw = 68 mm² (available window area)
-- Bsat ≈ 300 mT at 100°C for N87 ferrite
+- Bsat ≈ 390 mT at 100°C for N87 ferrite (TDK datasheet)
 
 **Maximum flux density (avoid saturation):**
 
@@ -112,7 +112,7 @@ For DCM flyback, the flux swings from 0 to B_peak each cycle (unipolar):
 B_peak = Lm × Ip_peak / (Np × Ae)
 ```
 
-Target B_peak ≤ 200 mT (leaves 100 mT margin below Bsat at temperature):
+Target B_peak ≤ 200 mT (leaves 190 mT margin below Bsat at temperature):
 ```
 Np = Lm × Ip_peak / (B_peak × Ae)
    = 11.0e-6 × 6.55 / (0.200 × 52e-6)
@@ -140,24 +140,17 @@ Lm = µ0 × Np² × Ae / (lg + le/µr)
 where:
   µ0 = 4π × 10⁻⁷ H/m
   lg = air gap length
-  le = effective magnetic path length (EE25: le ≈ 44 mm)
+  le = effective magnetic path length (E25/13/7: le = 58 mm)
   µr = relative permeability of N87 ferrite (≈ 2200 at 25°C, ≈ 1800 at 100°C)
 ```
 
 The gap term dominates when lg >> le/µr:
 ```
-le/µr = 44e-3 / 1800 = 24.4 µm
+le/µr = 58e-3 / 1800 = 32.2 µm
 
 Lm = µ0 × Np² × Ae / lg  [air-gap dominated]
 lg = µ0 × Np² × Ae / Lm
-   = 4π×10⁻⁷ × 49 × 52e-6 / 11.0e-6
-   = 4π×10⁻⁷ × 49 × 52e-6 / 11.0e-6
-   = 4π×10⁻⁷ × 2548e-6 / 11.0e-6
-   = 4π×10⁻⁷ × 0.2316
-   = 4π × 23.16e-8
-   = 291.0 nm × 10 = ...
 
-Let me recalculate clearly:
 µ0 × Np² × Ae = 4π×10⁻⁷ × 49 × 52×10⁻⁶
               = 1.2566×10⁻⁶ × 49 × 52×10⁻⁶
               = 1.2566×10⁻⁶ × 2548×10⁻⁶
@@ -249,7 +242,7 @@ At 150 kHz, skin depth = 0.171 mm. For 4-turn secondary with high current, use f
 - Foil thickness should be ≤ 2δ = 0.34 mm for minimal AC loss
 
 **Select: 1.5 mm wide × 0.3 mm thick copper foil for secondary (4 turns)**
-- Area = 0.45 mm² → J = 5.68/0.45 = 12.6 A/mm² — slightly high; use 0.5 mm thick foil (1 × 2δ ok)
+- Area = 0.45 mm² → J = 5.68/0.45 = 12.6 A/mm² — slightly high; use 0.5 mm thick foil (area 0.75 mm², J = 7.6 A/mm²; ≈ 3δ thick, so expect some extra AC loss)
 
 ---
 
@@ -302,35 +295,33 @@ P_primary_DCR = Ip_rms² × R_DCR_pri = 6.44 × 0.0107 = 68.9 mW
 **Secondary DCR:**
 ```
 R_DCR_sec = ρ_Cu × (Ns × l_turn) / A_wire
-          = 17.2e-9 × (4 × 0.035) / 0.5e-6
-          = 17.2e-9 × 0.14 / 0.5e-6
-          = 4.82 mΩ
+          = 17.2e-9 × (4 × 0.035) / 0.75e-6
+          = 17.2e-9 × 0.14 / 0.75e-6
+          = 3.21 mΩ
 
-P_secondary_DCR = Is_rms² × R_DCR_sec = 32.3 × 0.00482 = 155.7 mW
+P_secondary_DCR = Is_rms² × R_DCR_sec = 32.3 × 0.00321 = 103.7 mW
 ```
 
-**Total winding loss (DC only):** 69 + 156 = 225 mW
+**Total winding loss (DC only):** 69 + 104 = 173 mW
 
 **Core loss (using Steinmetz for N87, approximate):**
 
-N87 Steinmetz constants (from TDK datasheet at 150 kHz): k ≈ 3.5×10⁻⁵, α ≈ 1.74, β ≈ 2.73
+The TDK N87 datasheet gives typical Pv at 100°C of 57 kW/m³ (25 kHz, 200 mT), 375 kW/m³ (100 kHz, 200 mT) and 390 kW/m³ (300 kHz, 100 mT). Fitting Pv = k × f^α × B^β through these points gives α ≈ 1.36, β ≈ 2.10.
 
 ```
 B_AC = B_peak / 2 = 138 / 2 = 69 mT = 0.069 T  (in DCM, core sees unipolar triangle)
 Actually: for DCM flyback, ΔB = B_peak (swings from 0 to B_peak each cycle)
 Use B_AC = ΔB/2 = 0.069 T for Steinmetz
 
-Pv = k × f^α × B_AC^β = 3.5e-5 × (150e3)^1.74 × (0.069)^2.73
-   = 3.5e-5 × 4.7e9 × (0.069)^2.73
+Pv = 375 kW/m³ × (150/100)^1.36 × (69/200)^2.10   [scaled from the 100 kHz, 200 mT point]
+   = 375 × 1.74 × 0.107
+   ≈ 70 kW/m³
 
-(0.069)^2.73: ln(0.069) = -2.674, × 2.73 = -7.298, exp(-7.298) = 6.77×10⁻⁴
-Pv = 3.5e-5 × 4.7e9 × 6.77e-4 = 3.5e-5 × 3.18e6 = 111.4 kW/m³
-
-Core volume EE25 = 1700 mm³ = 1.7×10⁻⁶ m³
-P_core = 111.4e3 × 1.7e-6 = 189 mW
+Core volume E25/13/7 = 2990 mm³ = 2.99×10⁻⁶ m³ (Ferroxcube datasheet)
+P_core = 70e3 × 2.99e-6 = 209 mW
 ```
 
-**Total transformer losses: 225 + 189 = 414 mW ≈ 1.4% of Pout**
+**Total transformer losses: 173 + 209 = 382 mW ≈ 1.3% of Pout**
 
 This is within acceptable range for an 85% efficiency target.
 
@@ -349,9 +340,9 @@ This is within acceptable range for an 85% efficiency target.
 | Primary Ip_peak | 6.55 A |
 | Secondary Is_peak | 16.4 A |
 | Leakage inductance (estimated) | ~490 nH (non-interleaved) |
-| Winding losses | 225 mW |
-| Core losses | 189 mW |
-| Total transformer loss | 414 mW (1.4% of Pout) |
+| Winding losses | 173 mW |
+| Core losses | 209 mW |
+| Total transformer loss | 382 mW (1.3% of Pout) |
 
 **Key design notes:**
 1. Interleave windings (P-S-P) to reduce leakage inductance and snubber loss.

@@ -19,13 +19,13 @@ Tamb   = 50°C
 **Available core:** Ferroxcube E25/13/7, N87 material
 ```
 Ae     = 52.0 mm²   (effective cross-sectional area)
-Ve     = 2100 mm³   (effective core volume)
-le     = 40.3 mm    (effective magnetic path length)
+Ve     = 2990 mm³   (effective core volume)
+le     = 58 mm      (effective magnetic path length)
 Aw     = 56.0 mm²   (winding window area)
 MLT    = 28 mm      (mean length per turn — approximate for this core)
 AL     = 2300 nH/N² (ungapped, from datasheet)
 µi     = 2200       (initial relative permeability)
-B_sat  = 490 mT at 25°C, 330 mT at 100°C
+B_sat  = 490 mT at 25°C, 390 mT at 100°C (TDK N87 datasheet)
 ```
 
 **Available wire:** Use AWG 24 (d = 0.511 mm, Aw_wire = 0.205 mm²)
@@ -80,19 +80,19 @@ B_peak = L × I_peak / (N × Ae) = 5.6×10⁻⁶ × 9.18 / (2 × 52×10⁻⁶)
        = 51.4×10⁻⁶ / 104×10⁻⁶
        = 0.494 T = 494 mT
 
-B_sat at 100°C = 330 mT → 494 mT >> 330 mT → SATURATES. Must gap and add turns.
+B_sat at 100°C = 390 mT → 494 mT >> 390 mT → SATURATES. Must gap and add turns.
 ```
 
 **Design with more turns to reduce B:**
 
-Target B_peak ≤ 0.7 × B_sat(100°C) = 0.7 × 330 mT = 231 mT (with 30% margin)
+Target B_peak ≤ 0.7 × B_sat(100°C) = 0.7 × 390 mT = 273 mT (with 30% margin)
 
-Required N to achieve B_peak ≤ 231 mT:
+Required N to achieve B_peak ≤ 273 mT:
 ```
 N ≥ L × I_peak / (B_max × Ae)
-  = 5.6×10⁻⁶ × 9.18 / (231×10⁻³ × 52×10⁻⁶)
-  = 51.4×10⁻⁶ / 12.0×10⁻⁶
-  = 4.28 → choose N = 5 turns (round up for safety)
+  = 5.6×10⁻⁶ × 9.18 / (273×10⁻³ × 52×10⁻⁶)
+  = 51.4×10⁻⁶ / 14.2×10⁻⁶
+  = 3.62 → N = 4 gives 247 mT; choose N = 5 turns for extra margin
 ```
 
 **Verify B_peak with N = 5:**
@@ -102,8 +102,8 @@ B_peak = L × I_peak / (N × Ae)
        = 51.4×10⁻⁶ / 260×10⁻⁶
        = 0.198 T = 198 mT
 
-198 mT < 231 mT ✓  (14% below limit — acceptable margin)
-198 mT / 330 mT = 60% of B_sat at 100°C — good design point
+198 mT < 273 mT ✓  (27% below limit — comfortable margin)
+198 mT / 390 mT = 51% of B_sat at 100°C — good design point
 ```
 
 ---
@@ -216,9 +216,9 @@ With 4 strands in parallel: DCR_total = 18.7 / 4 = 4.67 mΩ
 **DC copper loss:**
 ```
 I_rms ≈ Iout = 8A (for small ripple)
-More precisely: I_rms = Iout × √(1 + (ΔIL/(Iout×2√3))²) = 8 × √(1 + (2.36/27.7)²) ≈ 8.005A ≈ 8A
+More precisely: I_rms = Iout × √(1 + (ΔIL/(Iout×2√3))²) = 8 × √(1 + (2.36/27.7)²) ≈ 8.03A
 
-P_Cu_DC = I_rms² × DCR = 64 × 0.00467 = 0.299 W
+P_Cu_DC = I_rms² × DCR = 64.5 × 0.00467 = 0.301 W
 ```
 
 **AC copper loss:**
@@ -230,24 +230,24 @@ For a 1-layer winding of AWG 26 (d=0.405mm) at 300 kHz:
 Dowell F_R for 1 layer (N_layers = 1):
 F_R = Δ × [sinh(2Δ)+sin(2Δ)] / [cosh(2Δ)-cos(2Δ)]
     = 2.37 × [sinh(4.74)+sin(4.74)] / [cosh(4.74)-cos(4.74)]
-    = 2.37 × [57.0+(-0.998)] / [57.02-(-0.540)]
-    = 2.37 × 56.0 / 57.56
-    = 2.37 × 0.973
-    = 2.31
+    = 2.37 × [57.21+(-1.000)] / [57.22-(0.028)]
+    = 2.37 × 56.21 / 57.19
+    = 2.37 × 0.983
+    = 2.33
 ```
 
 AC ripple current RMS value:
 ```
 I_AC_rms = ΔIL / (2√3) = 2.36 / 3.464 = 0.681 A
 
-P_Cu_AC = (F_R - 1) × DCR × I_AC_rms² = (2.31 - 1) × 0.00467 × 0.681²
-        = 1.31 × 0.00467 × 0.464
-        = 2.84 mW  (negligible compared to DC loss)
+P_Cu_AC = (F_R - 1) × DCR × I_AC_rms² = (2.33 - 1) × 0.00467 × 0.681²
+        = 1.33 × 0.00467 × 0.464
+        = 2.88 mW  (negligible compared to DC loss)
 ```
 
 **Total copper loss:**
 ```
-P_Cu = 0.299 + 0.003 = 0.302 W
+P_Cu = 0.301 + 0.003 = 0.304 W
 ```
 
 **Core loss:**
@@ -266,26 +266,27 @@ feq = (2 × fsw/π²) / (D × (1-D))
 
 N87 at 100°C: Cm = 2.23×10⁻⁷, α = 1.58, β = 2.65
 
-Pv = Cm × feq^(α-1) × ΔB^β × fsw
-   = 2.23×10⁻⁷ × (368,800)^0.58 × (0.0506)^2.65 × 300,000
+The Steinmetz form uses the peak flux density B̂ = ΔB/2 = 25.3 mT (not the peak-to-peak swing):
+
+Pv = Cm × feq^(α-1) × B̂^β × fsw
+   = 2.23×10⁻⁷ × (368,800)^0.58 × (0.0253)^2.65 × 300,000
 
 (368,800)^0.58 = 10^(0.58 × log10(368800)) = 10^(0.58 × 5.567) = 10^3.229 = 1695
 
-(0.0506)^2.65 = 10^(2.65 × log10(0.0506)) = 10^(2.65 × (-1.296)) = 10^(-3.434) = 3.68×10⁻⁴
+(0.0253)^2.65 = 10^(2.65 × log10(0.0253)) = 10^(2.65 × (-1.597)) = 10^(-4.232) = 5.86×10⁻⁵
 
-Pv = 2.23×10⁻⁷ × 1695 × 3.68×10⁻⁴ × 300,000
-   = 2.23×10⁻⁷ × 1695 × 110.4
-   = 2.23×10⁻⁷ × 187,100
-   = 0.0417 W/cm³ = 41.7 mW/cm³
+Pv = 2.23×10⁻⁷ × 1695 × 5.86×10⁻⁵ × 300,000
+   = 2.23×10⁻⁷ × 1695 × 17.6
+   = 0.0066 W/cm³ = 6.6 mW/cm³
 
-P_core = Pv × Ve = 41.7 × 2.1 = 87.6 mW = 0.088 W
+P_core = Pv × Ve = 6.6 × 2.99 = 19.9 mW = 0.020 W   (the full iGSE integral gives 19 mW)
 ```
 
 **Total power dissipation:**
 ```
-P_total = P_Cu + P_core = 0.302 + 0.088 = 0.390 W
+P_total = P_Cu + P_core = 0.304 + 0.020 = 0.324 W
 
-Loss split: Cu = 77.4%, Core = 22.6%
+Loss split: Cu = 94%, Core = 6%
 ```
 
 ---
@@ -305,21 +306,21 @@ Use A_surface ≈ 9 cm²  (intermediate estimate)
 
 **Temperature rise (Pressman formula):**
 ```
-ΔT ≈ 450 × P_total / A_surface = 450 × 0.390 / 9 = 19.5°C
+ΔT ≈ 450 × P_total / A_surface = 450 × 0.324 / 9 = 16.2°C
 ```
 
 **Operating temperature:**
 ```
-T_coil = T_ambient + ΔT = 50°C + 19.5°C = 69.5°C
+T_coil = T_ambient + ΔT = 50°C + 16.2°C = 66.2°C
 
-69.5°C < 100°C (maximum inductor temperature) ✓
+66.2°C < 100°C (maximum inductor temperature) ✓
 ```
 
-Verify B_sat margin at 70°C (interpolating between 25°C and 100°C values):
+Verify B_sat margin at 66°C (interpolating between 25°C and 100°C values):
 ```
-B_sat(70°C) ≈ 490 - (490-330) × (70-25)/(100-25) = 490 - 160 × 0.6 = 490 - 96 = 394 mT
+B_sat(66°C) ≈ 490 - (490-390) × (66-25)/(100-25) = 490 - 100 × 0.55 = 490 - 55 = 435 mT
 
-B_peak = 198 mT << 394 mT ✓  (substantial margin)
+B_peak = 198 mT << 435 mT ✓  (substantial margin)
 ```
 
 ---
@@ -334,14 +335,14 @@ B_peak = 198 mT << 394 mT ✓  (substantial margin)
 | Turns           | 5                 | N = 5                                |
 | Wire            | 4 × AWG 26 parallel| Bundle of 4 strands                 |
 | DCR             | 4.67 mΩ           | At 20°C                              |
-| DCR at 70°C     | 4.67 × 1.197 = 5.59 mΩ | ρ increases 19.7% from 20° to 70°C|
-| B_peak          | 198 mT            | At 70°C operating point              |
-| B_sat margin    | 198/394 = 50%     | 50% of B_sat — good margin           |
-| P_Cu            | 302 mW            | Dominates loss                       |
-| P_core          | 88 mW             | iGSE at 100°C parameters             |
-| P_total         | 390 mW            |                                      |
-| Temperature rise| 19.5°C            | Well below 40°C target ✓             |
-| Operating temp  | 69.5°C            | Within insulation limits ✓           |
+| DCR at 66°C     | 4.67 × 1.181 = 5.52 mΩ | ρ increases 18.1% from 20° to 66°C|
+| B_peak          | 198 mT            | At 66°C operating point              |
+| B_sat margin    | 198/435 = 46%     | 46% of B_sat — good margin           |
+| P_Cu            | 304 mW            | Dominates loss                       |
+| P_core          | 20 mW             | iGSE at 100°C parameters             |
+| P_total         | 324 mW            |                                      |
+| Temperature rise| 16.2°C            | Well below 40°C target ✓             |
+| Operating temp  | 66.2°C            | Within insulation limits ✓           |
 
 ---
 
@@ -358,23 +359,23 @@ New feq scales with fsw → doubles
 New ΔB halves
 P_core_new/P_core = 2^(α) × 0.5^β = 2^1.58 × 0.5^2.65
                   = 2.99 × 0.157 = 0.47  (47% of original)
-P_core_new = 0.088 × 0.47 = 0.041 W
+P_core_new = 0.020 × 0.47 = 0.009 W
 
 But DC copper loss is the same (same Iout) — core loss drops with frequency.
-Total P_new ≈ 0.302 + 0.041 = 0.343 W  (slight improvement)
+Total P_new ≈ 0.304 + 0.009 = 0.313 W  (slight improvement)
 
 However: AC copper loss increases (higher frequency → more skin/proximity loss).
 Need Litz wire or smaller strand diameter for 600 kHz operation.
 ```
 
-**If inductance were undersized (L = 2 µH, ΔIL = 60%):**
+**If inductance were undersized (L = 2.75 µH, ΔIL = 60%):**
 ```
 I_peak = 8 + 0.6×8/2 = 10.4 A
-B_peak = 2×10⁻⁶ × 10.4 / (5 × 52×10⁻⁶) = 80 mT (lower peak B)
+B_peak = 2.75×10⁻⁶ × 10.4 / (5 × 52×10⁻⁶) = 110 mT (lower peak B)
 I_AC_rms = 4.8/(2√3) = 1.39 A
-P_Cu_AC = (2.31-1) × 0.00467 × 1.39² = 11.8 mW (still small but 4× higher)
-P_core smaller but P_Cu about same → similar total
+P_Cu_AC = (2.33-1) × 0.00467 × 1.39² = 12.0 mW (still small but 4× higher)
+P_core unchanged (ΔB is set by the volt-seconds and N, not by L) and P_Cu about same → similar total
 
-But output capacitor must handle 4× more ripple current: capacitor ESR limits output voltage ripple.
+But output capacitor must handle 2× more ripple current: capacitor ESR limits output voltage ripple.
 Also: converter enters DCM at light loads → different operating mode.
 ```

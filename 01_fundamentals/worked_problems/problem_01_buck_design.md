@@ -39,7 +39,9 @@ In steady state, volt-second balance applies including MOSFET drops. With Rds_HS
 Vout = D × Vin - Iout × [D × Rds_HS + (1-D) × Rds_LS + DCR]
 3.3  = D × 12 - 2 × [D × 0.015 + 0.725 × 0.015 + 0.05]
 ```
-Solving: D_actual ≈ 0.282
+Solving: D_actual ≈ 0.286
+
+Freezing (1-D) at 0.725 is harmless here: with Rds_HS = Rds_LS the two MOSFET terms sum to Iout × Rds whatever D is, so the self-consistent solution is D = (3.3 + 2 × 0.065) / 12 = 0.286. With unequal Rds_on, iterate once from D = 0.275.
 
 The feedback loop corrects for this automatically. Use D = 0.275 for component sizing at nominal Vin.
 
@@ -94,19 +96,19 @@ Isat_required = IL_peak / 0.70 = 2.29 / 0.70 = 3.27 A minimum
 IL_rms ≈ √(Iout² + (ΔIL)²/12) = √(4 + 0.028) ≈ 2.01 A
 ```
 
-**Component selection — Würth Elektronik WE-TPC 744 771 4082:**
+**Component selection — Würth Elektronik WE-PD 7447779008 (7332 size):**
 
 | Parameter | Requirement | Selected Part | Result |
 |-----------|-------------|---------------|--------|
 | Inductance | 8.2 µH | 8.2 µH | PASS |
-| Isat | ≥ 3.27 A | 3.8 A | PASS (1.66× margin) |
-| Irms rated | ≥ 2.01 A | 2.2 A | PASS |
-| DCR | ≤ 100 mΩ | 48 mΩ typical | PASS |
-| Package | — | 5.0×5.0×2.5 mm | — |
+| Isat | ≥ 3.27 A | 3.7 A typ. (30% L drop; 3.0 A at 10% drop) | PASS (1.62× margin) |
+| Irms rated | ≥ 2.01 A | 2.7 A (ΔT = 40 K) | PASS |
+| DCR | ≤ 100 mΩ | 47 mΩ typical (53 mΩ max) | PASS |
+| Package | — | 7.3×7.3×4.5 mm max | — |
 
 **DCR loss at full load:**
 ```
-P_DCR = Iout² × DCR = 4 × 0.048 = 0.192 W
+P_DCR = Iout² × DCR = 4 × 0.047 = 0.188 W
 ```
 
 **CCM/DCM boundary current with selected L:**
@@ -185,7 +187,7 @@ Ceramic capacitors handle this easily.
 I_rms_cin = Iout × √(D × (1-D)) = 2 × √(0.275 × 0.725) = 2 × 0.446 = 0.893 A
 ```
 
-**Voltage rating:** Vin_max + 20% spike margin:
+**Voltage rating:** Vin_max + 50% spike margin:
 ```
 Vcap_rated ≥ 13.2 × 1.5 = 19.8 V  → select 25V rated capacitors
 ```
@@ -204,7 +206,7 @@ High-frequency decoupling (ceramic, directly at switching node):
 - 2× 22 µF, 25V X7R, 1210 package → effective ≈ 14 µF each at 12V → 28 µF total
 
 Bulk capacitance (polymer or low-ESR electrolytic):
-- 1× 100 µF, 25V polymer electrolytic (Panasonic EEVFK1E101P): ESR ≈ 18 mΩ, handles 1A+ ripple current
+- 1× 100 µF, 25V aluminium electrolytic (Panasonic FK series EEEFK1E101P, formerly EEVFK1E101P): 0.26 Ω impedance and 300 mA rms ripple rating at 100 kHz — bulk and damping only; the low-impedance ceramics carry the 0.89 A ripple current
 
 **Verify input ripple with 28 µF ceramic:**
 ```
@@ -235,7 +237,7 @@ For L_par = 3 nH and dI/dt = 2A / 5 ns = 400 A/µs: V_spike = 1.2 V (acceptable 
 - Id ≥ IL_peak = 2.29 A
 - Optimise for Rds_on (zero-voltage switching → minimal switching loss)
 
-**Selected: Vishay SiR626ADP — dual N-channel, PowerPAK 1212-8 package:**
+**Selected: a 30 V asymmetric dual N-channel MOSFET (half-bridge package). The part values below are illustrative, not taken from a specific datasheet — substitute the chosen part's values:**
 
 | Parameter | HS spec | LS spec | Part value |
 |-----------|---------|---------|------------|
@@ -300,7 +302,7 @@ Assumption of 70°C Tj for Rds_on correction was conservative — actual Tj lowe
 
 | Loss source | Power (mW) | % of Pout |
 |-------------|------------|-----------|
-| Inductor DCR (Iout² × DCR) | 192 | 2.91% |
+| Inductor DCR (Iout² × DCR) | 188 | 2.85% |
 | HS MOSFET conduction | 8.0 | 0.12% |
 | LS MOSFET conduction | 12.2 | 0.18% |
 | HS MOSFET switching | 23.6 | 0.36% |
@@ -308,15 +310,15 @@ Assumption of 70°C Tj for Rds_on correction was conservative — actual Tj lowe
 | Body diode conduction | 28 | 0.42% |
 | Inductor core + AC winding | ~20 | 0.30% |
 | Controller quiescent (Iq) | ~15 | 0.23% |
-| **Total estimated losses** | **439** | **6.65%** |
+| **Total estimated losses** | **435** | **6.59%** |
 
 **Output power:** Pout = 3.3 × 2 = **6.6 W**
 
-**Input power:** Pin = 6.6 + 0.439 = **7.039 W**
+**Input power:** Pin = 6.6 + 0.435 = **7.035 W**
 
 **Estimated full-load efficiency:**
 ```
-η = Pout / Pin = 6.6 / 7.039 = 93.7%
+η = Pout / Pin = 6.6 / 7.035 = 93.8%
 ```
 
 **Dominant loss: gate drive at 140 mW (32% of all losses)**
@@ -336,12 +338,12 @@ Options to recover 1–1.5% efficiency:
 
 | Component | Selection | Verified |
 |-----------|-----------|---------|
-| L | 8.2 µH, Isat=3.8A, DCR=48mΩ | Peak=2.29A < 3.8A, P_loss=192mW |
+| L | 8.2 µH, Isat=3.7A, DCR=47mΩ | Peak=2.29A < 3.7A, P_loss=188mW |
 | Cout | 3× 22µF 10V X7R MLCC (49.5µF eff.) | Ripple=3.5mV ≪ 20mV |
-| Cin | 2× 22µF 25V X7R + 100µF polymer | I_rms handled, ΔVin=28.5mV |
+| Cin | 2× 22µF 25V X7R + 100µF electrolytic | I_rms handled, ΔVin=28.5mV |
 | HS MOSFET | 30V, Rds=5.6mΩ, Qg=12nC | Tj=63°C |
 | LS MOSFET | 30V, Rds=3.2mΩ, Qg=16nC | Tj=63°C |
-| Efficiency | 93.7% full load | Gate drive is dominant loss |
+| Efficiency | 93.8% full load | Gate drive is dominant loss |
 
 ---
 

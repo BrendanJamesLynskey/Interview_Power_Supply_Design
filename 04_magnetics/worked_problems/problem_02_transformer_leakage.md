@@ -17,9 +17,9 @@ Winding: Non-interleaved (primary bottom, secondary top, separated by 3 layers o
 
 **Measured values:**
 ```
-Primary inductance (Ls shorted): L_primary = 52 mH → magnetising inductance Lm = 52 mH
-Primary leakage (Ls shorted):    Ll_primary = 18 µH   (measured with LCR at 100 kHz)
-Secondary leakage (Lp shorted):  Ll_secondary = 0.72 µH
+Primary inductance (Ls open):    L_primary = 52 mH → magnetising inductance Lm = 52 mH
+Primary leakage share:           Ll_primary = 18 µH   (half of the 36 µH read with Ls shorted, LCR at 100 kHz — equal-split assumption)
+Secondary leakage share:         Ll_secondary = 0.72 µH  (= 18 µH / n²)
 Total leakage referred to primary: Ll_total = 18 + 25 × 0.72 = 18 + 18 = 36 µH
 ```
 
@@ -33,8 +33,8 @@ Total leakage referred to primary: Ll_total = 18 + 25 × 0.72 = 18 + 18 = 36 µH
 ```
 Short the secondary winding.
 Measure inductance of primary with LCR meter at operating frequency (100 kHz).
-→ L_measured = Lm || (Ll_primary + n²×Ll_secondary)   [parallel combination of Lm and leakage]
-For Ll_primary << Lm:  L_measured ≈ Ll_primary + n²×Ll_secondary = Ll_total
+→ L_measured = Ll_primary + (Lm || n²×Ll_secondary)   [Lm is shunted by the reflected secondary leakage]
+For n²×Ll_secondary << Lm:  L_measured ≈ Ll_primary + n²×Ll_secondary = Ll_total
 → Short-circuit primary inductance = total leakage referred to primary
 → Ll_total = 36 µH  (measured with secondary shorted)
 ```
@@ -200,7 +200,7 @@ Ll_interleaved ≈ Ll_non-interleaved / 4 = 36µH / 4 = 9 µH
 
 More precisely, for the P-S-P structure:
 ```
-Ll ≈ µ0 × (Np/2)² × bw × (d_ins / 3 + d_cond/(N_sections²)) / lw
+Ll ≈ µ0 × (Np/2)² × lw × (d_ins / 3 + d_cond/(N_sections²)) / bw
    ≈ Ll_original × (1/N_sections²) × correction_factor
    ≈ 36µH × 0.25 = 9 µH  [rough estimate]
 ```
@@ -274,8 +274,8 @@ This converts a problem into a feature.
    - Secondary connected to LCR meter
    - Primary shorted
    - Measure L
-   - Result: Ll_secondary = 0.72 µH
-   - Verify: n² × Ll_secondary = 25 × 0.72 = 18 µH ✓ (confirms measurement)
+   - Result: Lshort_sec = Ll_total / n² = 36 µH / 25 = 1.44 µH (total leakage referred to the secondary)
+   - Verify: n² × Lshort_sec = 25 × 1.44 = 36 µH ✓ (matches the primary-side short-circuit reading)
 
 **Coupling coefficient:**
 ```

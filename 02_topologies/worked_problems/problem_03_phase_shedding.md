@@ -42,8 +42,8 @@ P_fixed_phase = 120 mW
 
 Total losses (all 4 phases):
 ```
-P_conduction_total = 4 × (Iout/4)² × 0.002 = 4 × Iout²/16 × 0.002 = Iout²/8 × 0.002 = Iout² × 0.00025
-                   = 0.25 mΩ × Iout²  (combined for 4 phases)
+P_conduction_total = 4 × (Iout/4)² × 0.002 = 4 × Iout²/16 × 0.002 = Iout²/4 × 0.002 = Iout² × 0.0005
+                   = 0.5 mΩ × Iout²  (combined for 4 phases)
 
 Note: 4 phases in parallel share current, so equivalent resistance = Rds_per_phase / 4 = 2mΩ/4 = 0.5mΩ
 Actually: P_cond = Iout² × (Rds_per_phase / N) = Iout² × (0.002/4) = Iout² × 0.0005
@@ -71,7 +71,7 @@ Pin = Pout + P_total_loss
 | 80       | 80.0    | 3.200     | 0.500      | 3.700     | 95.6  |
 | 100      | 100.0   | 5.000     | 0.500      | 5.500     | 94.8  |
 
-**Peak efficiency occurs around 40A (96.9%) where conduction = fixed loss:**
+**Peak efficiency (96.9%) occurs where conduction = fixed loss:**
 ```
 Iout_peak_eff = √(P_fixed / R_eff) = √(0.500 / 0.0005) = √1000 = 31.6 A
 ```
@@ -156,26 +156,17 @@ For completeness, 1-phase model:
 P_cond_1phase = Iout² × 0.002
 P_fixed_1phase = 1 × 120 + 20 = 140 mW
 Iout_crossover_2to1 = √((P_fixed_2 - P_fixed_1) / (R_eff_1 - R_eff_2))
-                    = √((260 - 140) / (0.002 - 0.001))
-                    = √(120 / 0.001) = √120,000 = 346 A  — impractical
+                    = √((0.260 - 0.140) / (0.002 - 0.001))
+                    = √120 = 10.95 A
 ```
 
-Wait — this result means 1-phase is NEVER more efficient than 2-phase? Let me re-examine:
-
-At 1A load with 1 phase:
+Check at 1A load:
 ```
 η_1phase = 1/(1 + 0.002 + 0.140) = 1/1.142 = 87.6%
 η_2phase = 1/(1 + 0.001 + 0.260) = 1/1.261 = 79.3%
 ```
 
-1-phase IS better at 1A! The crossover calculation needs fixing:
-
-```
-For 1-phase vs 2-phase crossover:
-Iout² × 0.002 + 0.140 = Iout² × 0.001 + 0.260
-Iout² × 0.001 = 0.120
-Iout = √120 = 10.95 A
-```
+1-phase is better at 1A, consistent with the 11A crossover.
 
 **Revised shedding schedule:**
 - Iout > 22A: 4 phases
@@ -202,18 +193,17 @@ Per-phase ripple:
 
 D = 0.0833 = 1/12, which is not near any null point for N=4 (nulls at k/4: 0.25, 0.50, 0.75).
 
-The effective output ripple is approximately (by detailed waveform analysis):
+For D < 1/N, while one phase is on the summed current rises at (Vin − N × Vout)/L for D × T, so:
 ```
-ΔI_4phase ≈ 3 × ΔIL_per_phase × (4D - 0)/(4D) for D < 1/4
-           ≈ ΔIL_per_phase × (4D)  [rough approximation for D << 1/N]
+ΔI_N = (Vin − N × Vout) × D / (fsw × L) = ΔIL_per_phase × (1 − N×D) / (1 − D)
 ```
 
-More precisely, using the interleaving formula for N=4, D=0.0833:
-The output ripple ≈ (1 - 4D) × ΔIL_per_phase = (1 - 0.333) × 10.4 = 6.93 A
+For N=4, D=0.0833:
+The output ripple = (12 − 4) × 0.0833 / 0.088 = 7.58 A  (= 10.4 × 0.667 / 0.917)
 
 **With 2 phases active (same D but N=2):**
 ```
-ΔI_2phase ≈ (1 - 2D) × ΔIL_per_phase = (1 - 0.167) × 10.4 = 8.71 A
+ΔI_2phase = (12 − 2) × 0.0833 / 0.088 = 9.47 A
 ```
 
 **With 1 phase:**
@@ -234,10 +224,10 @@ The output capacitor bank provides filtering. For the same bank, lower ripple fr
 ΔVout = ΔI × ESR + ΔI / (8 × f_ripple × Cout)
 ```
 
-At 4-phase ripple (1.6 MHz, ΔI = 6.93A, Cout = 1000µF, ESR = 0.2mΩ):
+At 4-phase ripple (1.6 MHz, ΔI = 7.58A, Cout = 1000µF, ESR = 0.2mΩ):
 ```
-ΔVout = 6.93 × 0.0002 + 6.93 / (8 × 1.6e6 × 1000e-6)
-      = 1.39 mV + 0.542 mV = 1.93 mV
+ΔVout = 7.58 × 0.0002 + 7.58 / (8 × 1.6e6 × 1000e-6)
+      = 1.52 mV + 0.59 mV = 2.11 mV
 ```
 
 At 1-phase (400 kHz, ΔI = 10.4A):
@@ -246,7 +236,7 @@ At 1-phase (400 kHz, ΔI = 10.4A):
       = 2.08 mV + 3.25 mV = 5.33 mV
 ```
 
-Ripple increases from 1.93 mV to 5.33 mV when shedding to 1 phase. The CPU specification must allow this.
+Ripple increases from 2.11 mV to 5.33 mV when shedding to 1 phase. The CPU specification must allow this.
 
 ---
 
@@ -262,10 +252,10 @@ Ripple increases from 1.93 mV to 5.33 mV when shedding to 1 phase. The CPU speci
 Required from capacitor alone (ignoring ESR for now):
 Cout ≥ ΔI / (8 × fsw × ΔVout)
      = 10.4 / (8 × 400e3 × 0.005)
-     = 10.4 / 1600 = 6.5 µF
+     = 10.4 / 16,000 = 650 µF
 ```
 
-This is trivially small — the capacitor sizing for ripple at light load is not the constraint.
+Including the ESR drop (10.4 A × 0.2 mΩ = 2.08 mV), only 2.92 mV is left for the capacitive term, so Cout ≥ 10.4 / (8 × 400e3 × 0.00292) ≈ 1110 µF. The 1000 µF bank is marginally short at 1-phase operation (5.33 mV) — light-load ripple does constrain the capacitor sizing when shedding to 1 phase.
 
 **At 2-phase operation (medium load):**
 
@@ -318,12 +308,12 @@ The output capacitor sized for 4-phase transients (to meet 50mV spec) may be ina
 |--------|-------|
 | 4-phase peak efficiency | 96.9% at 32A |
 | 2-phase peak efficiency | 96.9% at 16A |
-| 1-phase peak efficiency | 96.7% at 8A |
+| 1-phase peak efficiency | 96.8% at 8.4A |
 | Optimal 4→2 shed threshold | 22 A (with 6A hysteresis: shed at 22A, restore at 28A) |
 | Optimal 2→1 shed threshold | 11 A (with 3A hysteresis: shed at 11A, restore at 14A) |
-| 4-phase output ripple (at D=0.0833) | ~6.9 A (1.93 mV) at 1.6 MHz |
+| 4-phase output ripple (at D=0.0833) | 7.6 A (2.11 mV) at 1.6 MHz |
 | 1-phase output ripple | 10.4 A (5.33 mV) at 400 kHz |
-| Ripple spec compliance after shedding | PASS (5.33 mV < 5 mV limit — marginal) |
+| Ripple spec compliance after shedding | FAIL at 1 phase (5.33 mV > 5 mV limit — marginal) |
 | Transient response at 2 phases | 2× slower — verify with capacitor sizing |
 
 **Key practical considerations:**
