@@ -19,7 +19,7 @@ In a synchronous buck converter PCB layout, which component must be placed close
 
 **Explanation:**
 
-The input bypass (decoupling) capacitor must be placed as close as possible to the high-side MOSFET drain and the low-side MOSFET source (the "hot loop"). During each switching transition, the high-side MOSFET turns on and draws a large pulse of current from the input capacitor. This current flows through the loop: C_in → HS MOSFET drain → SW node → output inductor → (load) → return → LS MOSFET source → back to C_in.
+The input bypass (decoupling) capacitor must be placed as close as possible to the high-side MOSFET drain and the low-side MOSFET source (the "hot loop"). During each switching transition, the high-side MOSFET turns on and draws a large pulse of current from the input capacitor. The fast-switching current circulates in the loop C_in(+) → HS MOSFET → SW node → LS MOSFET → C_in(−): at each transition the current commutates between the high-side and low-side devices, and C_in supplies the pulsed input current. The output inductor current is continuous and is not part of this high-di/dt loop.
 
 The area enclosed by this current path is the "hot loop." Any inductance in this loop (trace inductance, Lloop = µ0 × Area / height) causes a voltage spike when the large di/dt is interrupted:
 
@@ -76,12 +76,12 @@ A standardised LISN enables reproducible measurements that correlate between dif
 
 A power MOSFET has Rth_jc = 1.5 K/W, and is mounted with thermal interface material (TIM) giving Rth_cs = 0.8 K/W on a heatsink with Rth_sa = 2.5 K/W. The MOSFET dissipates 8W. If ambient temperature is 40°C, what is the junction temperature?
 
-- A) 80°C
+- A) 78.4°C
 - B) 98°C
 - C) 118.4°C
 - D) 145°C
 
-**Correct answer: C**
+**Correct answer: A**
 
 **Explanation:**
 
@@ -92,18 +92,8 @@ Tj = Ta + P × (Rth_jc + Rth_cs + Rth_sa)
 Tj = 40°C + 8W × (1.5 + 0.8 + 2.5) K/W
 Tj = 40°C + 8W × 4.8 K/W
 Tj = 40°C + 38.4°C
-Tj = 78.4°C ≈ 78°C
+Tj = 78.4°C
 ```
-
-None of the options match exactly. Let me check:
-
-8 × 4.8 = 38.4. 40 + 38.4 = 78.4°C.
-
-Option A (80°C) is closest. The discrepancy suggests a slight rounding in the options.
-
-Let me try with Rth_total = 1.5 + 0.8 + 2.5 = 4.8 K/W: Tj = 40 + 8×4.8 = 40 + 38.4 = 78.4°C → closest to A (80°C).
-
-**Correct answer: A (80°C, with rounding)**
 
 The formula is always:
 ```
@@ -116,7 +106,6 @@ Tj = Ta + P_device × (Rth_jc + Rth_cs + Rth_sa)
 
 **Why D is wrong (145°C):** Would require P × Rth = 105 → Rth = 13.1 K/W — far too high.
 
-*Correct answer: A (80°C). The question as presented has option C labelled as correct in the key but the arithmetic gives ~78-80°C, making A the correct choice.*
 
 ---
 
@@ -332,8 +321,8 @@ At Tj = 110°C = 383K:
 ```
 Rds_on(110°C) = 10mΩ × (383/298)^2.3
                = 10mΩ × (1.285)^2.3
-               = 10mΩ × 1.72
-               = 17.2mΩ ≈ 17mΩ
+               = 10mΩ × 1.78
+               = 17.8mΩ ≈ 17-18mΩ
 ```
 
 The exponent of approximately 2.3 is material-dependent and varies between 2.0 and 2.5 for different silicon MOSFETs. Some datasheets provide a graph of Rds_on(T) / Rds_on(25°C) as a normalised curve — always use this curve rather than the simple formula for precision work.
@@ -344,7 +333,7 @@ The exponent of approximately 2.3 is material-dependent and varies between 2.0 a
 
 **Why B is wrong:** 12mΩ would correspond to a 20% increase, implying a linear or very weak temperature coefficient. For silicon MOSFETs, the increase from 25°C to 110°C is approximately 60-80%, not 20%.
 
-**Why D is wrong:** 20mΩ (doubled) would correspond to going from 25°C to approximately 150°C junction temperature, not 110°C. Rds_on doubling requires a larger temperature rise than 85°C.
+**Why D is wrong:** On this model Rds_on doubles when (T/298)^2.3 = 2, i.e. T = 298 × 2^(1/2.3) = 403K ≈ 130°C, not 110°C.
 
 ---
 
@@ -473,10 +462,10 @@ This is critical for milliohm shunts: with R_shunt = 5mΩ and I = 20A, V_sense =
 
 ## Q13
 
-A converter must operate from an input voltage range of 8-18V. The UVLO turn-on threshold should be 10V, and the UVLO turn-off threshold should be 8.5V. If the UVLO hysteresis resistor to the enable pin sources 50µA when the enable pin is high, and the voltage divider has R_bottom = 10kΩ and R_top = unknown, how is the hysteresis implemented?
+A converter must turn on when its input rises to 10V and turn off when it falls to 8.5V. Its enable pin has a 1.25V threshold and sources a 50µA hysteresis current into the pin while the converter is enabled. A resistor divider (R_top from Vin to the pin, R_bottom from the pin to ground) sets the thresholds. How is the hysteresis implemented?
 
 - A) By using a separate comparator IC to sense Vin and control the enable pin
-- B) R_top is selected to give V_enable = V_th at Vin = 10V; hysteresis is added by a resistor from enable pin to Vin that increases the effective divider ratio when the pin is high
+- B) The 50µA current flows through R_top when the pin is high, so Vin must fall by I_hys × R_top below the turn-on point before the part turns off; R_top sets the hysteresis and R_bottom then sets the turn-on threshold
 - C) A Zener diode in series with R_bottom clamps the threshold voltage
 - D) A capacitor in parallel with R_top slows the UVLO response to prevent oscillation at the threshold
 
@@ -484,45 +473,31 @@ A converter must operate from an input voltage range of 8-18V. The UVLO turn-on 
 
 **Explanation:**
 
-Most controller ICs with UVLO have an enable or UVLO pin that compares to an internal reference (e.g., 1.25V). A resistor divider from Vin to the pin to GND sets the threshold:
+Most controller ICs with UVLO have an enable or UVLO pin that compares to an internal reference (here 1.25V). A resistor divider from Vin sets the turn-on threshold:
 
 ```
-V_pin = Vin × R_bottom / (R_top + R_bottom)
+Vin_on = V_th × (R_top + R_bottom) / R_bottom
 ```
 
-For V_pin = V_th_internal at the turn-on voltage:
-```
-R_top = R_bottom × (Vin_on / V_th - 1) = 10k × (10/1.25 - 1) = 10k × 7 = 70kΩ
-```
-
-**Adding hysteresis with a "pull-up" resistor (R_hys) from enable pin to Vin:**
-
-When enable is HIGH (converter running, I_hys sources 50µA from Vin through R_hys to the pin):
-
-This extra current adds to the current through R_bottom, increasing V_pin. The turn-on threshold appears HIGHER from Vin's perspective, but the actual threshold calculation must account for the added current.
-
-Alternatively: the controller has an internal current source that sinks current from the UVLO pin when the enable is asserted (Vin > threshold). This current source provides hysteresis:
+When the pin goes high, the internal 50µA source adds current into the pin node. Superposition gives the turn-off point:
 
 ```
-V_hysteresis = I_hys × R_top_parallel_R_hys
+Vin_off = Vin_on - I_hys × R_top
 ```
 
-The turn-off voltage (when the enable goes low):
-```
-Vin_off = (V_th - I_hys × R_bottom) × (R_top + R_bottom) / R_bottom
-```
+so the hysteresis band is ΔV = I_hys × R_top, set by R_top alone.
 
-Where I_hys × R_bottom is the voltage reduction caused by the current source no longer providing current.
-
-**Practical calculation:** With I_hys = 50µA sourced to the UVLO pin (when enabled):
+**Design:**
 ```
-ΔV_vin = I_hys × R_top = 50µA × 70kΩ = 3.5V  (the hysteresis band)
-Turn-off threshold ≈ 10V - 3.5V × adjustment factor ≈ 8.5V (approximately)
+R_top    = ΔV / I_hys = (10 - 8.5) / 50µA = 30kΩ
+R_bottom = V_th × R_top / (Vin_on - V_th) = 1.25 × 30k / 8.75 = 4.29kΩ
+Check:  Vin_on  = 1.25 × 34.29k / 4.29k = 10.0V
+        Vin_off = 10.0 - 50µA × 30k   = 8.5V
 ```
 
-This requires iterating with the exact controller model.
+(If R_bottom were fixed at 10kΩ instead, the 10V threshold would force R_top = 70kΩ and a 3.5V hysteresis band, turning off at 6.5V. The divider values must be chosen together with the hysteresis current.)
 
-**Why A is wrong:** An external comparator is unnecessary — most UVLO functions are built into the controller IC. External comparators add cost and complexity. The hysteresis is implemented within the divider network as described in B.
+**Why A is wrong:** An external comparator is unnecessary — most UVLO functions are built into the controller IC. External comparators add cost and complexity. The hysteresis comes from the pin's current source acting on the divider, as described in B.
 
 **Why C is wrong:** A Zener in series with R_bottom would clamp the UVLO pin voltage, not set a hysteresis band. Zeners are used for other protection functions (overvoltage clamping) but are not the standard method for UVLO hysteresis in resistor dividers.
 
@@ -558,9 +533,9 @@ Rth_via ≈ t_PCB / (π × r_via × k_copper × t_plating × 2)
 
 where t_PCB is board thickness, r_via is via radius, k_copper = 385 W/(m·K). For t_PCB = 1.6mm, r_via = 0.15mm, t_plating = 25µm:
 
-Rth_via ≈ 1.6×10⁻³ / (π × 0.15×10⁻³ × 385 × 25×10⁻⁶ × 2) ≈ 88 K/W per via
+Rth_via ≈ 1.6×10⁻³ / (π × 0.15×10⁻³ × 385 × 25×10⁻⁶ × 2) ≈ 176 K/W per via
 
-With a 4×4 array of 16 vias in parallel: Rth_array = 88/16 = 5.5 K/W — much better than no vias.
+With a 4×4 array of 16 vias in parallel: Rth_array = 176/16 ≈ 11 K/W — much better than no vias.
 
 Filled vias (with copper or thermally conductive fill) further reduce Rth by conducting through the via barrel volume, not just the plated wall.
 
@@ -600,22 +575,22 @@ A 7dB reduction is relatively modest. Designers typically add at least 6-10dB of
 
 **Filter design for 7dB at 150kHz:**
 
-A simple single-stage LC filter (CM choke + X cap) provides approximately 40dB/decade above the corner frequency. For 7dB attenuation at 150kHz:
+A simple single-stage LC filter provides approximately 40dB/decade above its corner frequency. For 7dB attenuation at 150kHz:
 
 ```
-7dB = 20log10(f/fc)    for a first-order filter → f/fc = 10^(7/20) = 2.24
-fc = 150kHz / 2.24 = 67kHz
+7dB = 40 × log10(f/fc)  →  f/fc = 10^(7/40) = 1.50
+fc = 150kHz / 1.50 = 100kHz
 ```
 
-Or for a two-stage filter, each stage provides fewer dB for the same fc.
+With the 6-10dB design margin (13-17dB total), fc drops to roughly 70-82kHz.
 
 In practice, the 150kHz point is the LOWEST frequency in the conducted emissions range. It is also where EMI filters are least effective (CM choke inductance is lower at higher frequency due to self-resonance issues). Care must be taken to ensure the filter corner is well below 150kHz.
 
 **Why B is wrong:** 14 dB would be needed if the measured level were 80 dBµV (66+14 = 80). The measured level is 73 dBµV, so only 7 dB is needed to reach the 66 dBµV limit.
 
-**Why C is wrong:** 66 dBµV is the absolute limit level, not the required attenuation. If 66 dB of attenuation were required, the unfiltered emission would be at the limit + 66 dB = 132 dBµV — an extreme case that would require a massive multi-stage filter.
+**Why C is wrong:** 66 dBµV is the absolute limit level, not the required attenuation. Attenuating the 73 dBµV emission by 66 dB would leave 7 dBµV, far below the limit.
 
-**Why D is wrong:** 73 dBµV is the measured emission level. If 73 dB of attenuation were needed, the unfiltered level would be 146 dBµV (essentially equal to Vin in millivolts at the LISN). The required filter attenuation is the DIFFERENCE between measurement and limit, not the absolute level.
+**Why D is wrong:** 73 dBµV is the measured emission level, not the required attenuation. The required filter attenuation is the DIFFERENCE between measurement and limit, not the absolute level.
 
 ---
 
@@ -717,7 +692,7 @@ For a MOSFET with Qg = 50nC, Vgs = 10V, fsw = 500kHz:
 P_gate = 50nC × 10V × 500kHz = 250mW
 ```
 
-This 250mW is dissipated in the gate driver and gate resistor (split depends on relative impedance). A standard 0402 resistor (rated 100mW) would be thermally stressed. A 0603 resistor (rated 100-250mW) would run warm.
+This 250mW is dissipated in the gate driver and gate resistor (split depends on relative impedance). If most of it lands in the gate resistor, a standard 0402 resistor (typically rated 62.5mW) would be overloaded and a 0603 (typically 100mW) would be over its rating too; an 0805 or 1206 (125-250mW) is needed.
 
 **Is a warm gate resistor a problem?** Only if:
 1. The resistor exceeds its rated power (must derate to ≤ 50% of rated power for reliability)
@@ -812,6 +787,4 @@ Note: Conformal coating must be the correct type (as tested and certified), and 
 
 *End of Quiz — Practical Design*
 
-**Answer Key:** 1-C, 2-B, 3-A*, 4-B, 5-C, 6-C, 7-B, 8-A, 9-C, 10-B, 11-C, 12-B, 13-B, 14-B, 15-A, 16-D, 17-B, 18-B, 19-B, 20-A
-
-*Q3 note: Calculation gives Tj ≈ 78°C, making A (80°C) the correct answer. Option C (118.4°C) as listed in any other key is arithmetically incorrect — see the worked calculation in the explanation.*
+**Answer Key:** 1-C, 2-B, 3-A, 4-B, 5-C, 6-C, 7-B, 8-A, 9-C, 10-B, 11-C, 12-B, 13-B, 14-B, 15-A, 16-D, 17-B, 18-B, 19-B, 20-A

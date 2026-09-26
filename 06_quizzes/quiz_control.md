@@ -11,11 +11,11 @@
 A Type II compensator is designed for a voltage-mode buck converter. The compensator has one pole at the origin, one zero at 3kHz, and one pole at 20kHz. What is the phase contribution of this compensator at the crossover frequency of 10kHz?
 
 - A) -90°
-- B) -45°
+- B) -43°
 - C) +30°
 - D) +45°
 
-**Correct answer: C**
+**Correct answer: B**
 
 **Explanation:**
 
@@ -37,22 +37,7 @@ At f = 10kHz, fz = 3kHz, fp = 20kHz:
      = -43.3°
 ```
 
-Wait, that gives -43.3°, not +30°. Let me reconsider. Perhaps the question intends to ask for the phase boost (the net phase the compensator adds relative to a pure integrator at -90°):
-
-Phase boost = arctan(f/fz) - arctan(f/fp) at f = 10kHz
-= 73.3° - 26.6° = 46.7° ≈ +47°
-
-But the maximum phase boost for a Type II is at fmax = sqrt(fz × fp) = sqrt(3k × 20k) = sqrt(60M) = 7.75kHz, not 10kHz.
-
-At f = 7.75kHz:
-```
-∠Gc = -90° + arctan(7.75/3) - arctan(7.75/20)
-     = -90° + arctan(2.58) - arctan(0.388)
-     = -90° + 68.8° - 21.2°
-     = -42.4°
-```
-
-The total phase of the compensator at 10kHz is approximately -43°. The "phase contribution" relative to no compensation is -43°, and relative to a pure integrator (-90°) is +47°. Answer C (+30°) is the closest to the correct absolute phase of the compensator at 10kHz when rounded or if the question measures relative to some other baseline.
+So the compensator's phase at 10kHz is about -43° (option B). Relative to a pure integrator (-90°), the zero-pole pair is providing a phase boost of 73.3° - 26.6° = +46.7° at this frequency. (The maximum boost occurs at sqrt(fz × fp) = sqrt(3k × 20k) = 7.75kHz, where the phase is -42.4°, so 10kHz is close to optimum.)
 
 **For the interview, the key formula is:**
 ```
@@ -62,9 +47,9 @@ At fc = 10kHz, fz = 3kHz, fp = 20kHz: ≈ -43°
 
 **Why A is wrong:** -90° is the phase of a pure integrator (Type I compensator with no zero or additional pole). The zero in the Type II compensator adds positive phase relative to the pure integrator.
 
-**Why B is wrong:** -45° would be the phase of a simple first-order system at its pole frequency, not a Type II compensator at this frequency.
+**Why C is wrong:** +30° is not reachable: a Type II compensator's phase stays between -90° and 0° because the integrator contributes -90° at every frequency and the zero adds at most +90°.
 
-**Why D is wrong:** +45° is the phase of a first-order system at a frequency well below its pole. The Type II compensator never reaches +45° absolute phase — it always has the integrator's -90° as a baseline.
+**Why D is wrong:** +45° confuses the phase boost (+46.7°, measured relative to the integrator) with the absolute phase. The Type II compensator never reaches positive absolute phase — it always has the integrator's -90° as a baseline.
 
 ---
 
@@ -180,12 +165,12 @@ A converter loop is measured to have phase margin PM = 10° and gain margin GM =
 
 Phase margin and gain margin are related to the damping of the closed-loop system. Very low values indicate a lightly damped system:
 
-- PM = 10° corresponds to a damping ratio ζ ≈ PM/100 ≈ 0.10 (rough approximation), giving oscillatory step response with large overshoot (~60% overshoot for ζ = 0.1)
+- PM = 10° corresponds to a damping ratio ζ ≈ PM/100 ≈ 0.10 (rough approximation), giving oscillatory step response with large overshoot (~73% overshoot for ζ = 0.1)
 - GM = 3dB means the loop gain can only increase by a factor of √2 (≈1.41×) before the system becomes unstable
 
 The step response will show significant ringing at approximately the crossover frequency, with the ringing decaying very slowly (low ζ). This is the hallmark of a nearly-unstable control loop.
 
-**Typical acceptable specifications:** PM > 45°, GM > 6dB. At PM = 45°, ζ ≈ 0.4-0.5, giving ~15-20% overshoot with reasonable settling. At PM = 60°, ζ ≈ 0.6, giving ~5-10% overshoot.
+**Typical acceptable specifications:** PM > 45°, GM > 6dB. At PM = 45°, ζ ≈ 0.4-0.5, giving ~16-25% overshoot with reasonable settling. At PM = 60°, ζ ≈ 0.6, giving ~5-10% overshoot.
 
 **Why A is wrong:** Clean fast response with no overshoot corresponds to PM > 60°, GM > 10dB. PM = 10° is extremely marginal — the response would be far from clean.
 
@@ -343,7 +328,7 @@ Without the ESR zero, the plant phase at the crossover frequency is dominated by
 - The LC double pole: -180° of phase lag approaching ω0, recovering toward -90° well above ω0
 - No phase recovery from ESR zero within the bandwidth
 
-A Type II compensator provides only one zero (one phase boost hump). This may not be enough to boost phase from approximately -180° at the LC resonance to +45° (a PM of 45°) at the desired crossover frequency above ω0.
+A Type II compensator provides only one zero (one phase boost hump). This may not be enough to recover the loop phase from approximately -180° above the LC resonance to -135° (a PM of 45°) at the desired crossover frequency above ω0.
 
 A Type III compensator provides two zeros, placed to straddle the LC resonance, providing more phase boost and enabling higher crossover frequencies with ceramic capacitor designs.
 
@@ -490,7 +475,7 @@ What happens to the control-to-output transfer function of a boost converter in 
 - A) The LC resonant frequency increases by √2
 - B) The RHP zero frequency halves and moves toward the crossover frequency
 - C) The DC gain doubles and the LC double pole location is unchanged
-- D) The damping of the LC double pole increases and the RHP zero moves to higher frequency
+- D) The damping of the LC double pole decreases and the RHP zero moves to higher frequency
 
 **Correct answer: D**
 
@@ -502,37 +487,23 @@ For a CCM boost converter, the control-to-output transfer function has:
 
 **LC double pole:** ω0 = D' / √(L×C), where D' = (1-D)
 
-The Q-factor (damping) of the LC double pole:
+The Q-factor of the LC double pole (Erickson and Maksimović, *Fundamentals of Power Electronics*):
 ```
-Q = R × D'² × √(C/L)   (simplified)
+Q = D' × R × √(C/L)
 ```
 
-If R doubles (load halves): Q doubles → damping DECREASES (higher Q = less damped, more peaky resonance). Wait, higher Q = less damping. If R halves (load doubles), Q halves, damping increases.
+"Load halves" means Iout halves, which means R doubles (for fixed Vout). Then:
+- Q doubles, so the double pole is LESS damped (a higher resonant peak in the plant).
+- **RHP zero:** ωz_RHP = D'² × R / L doubles, so the RHP zero moves to HIGHER frequency, away from crossover (better for stability).
+- ω0 is unchanged (D is fixed by Vin/Vout in CCM), and the ideal DC gain Vout/D' does not depend on R.
 
-"Load halves" means Iout halves, which means R_load doubles (for fixed Vout).
-
-If R doubles: Q = R × D'² × √(C/L) increases → LESS damped LC resonance (higher peak).
-
-**RHP zero:** ωz_RHP = D'² × R / L = (1-D)² × R / L
-
-If R doubles: ωz_RHP doubles → RHP zero moves to HIGHER frequency (better news for stability).
-
-So with R doubled (load halved): RHP zero moves up, damping decreases.
-
-Answer D states "damping increases and RHP zero moves higher" — the RHP zero part is correct, but damping decreasing for halved load is the correct analysis.
-
-**The correct result for load halved (R doubled):**
-- RHP zero frequency increases (moves away from crossover — better)
-- LC double pole Q factor increases (less damped — worse, more ringing in the plant)
-- DC gain changes
-
-This is a nuanced question. Answer D is the best match for the RHP zero behaviour but has the damping direction inverted from strict analysis.
+Option D states exactly this: damping decreases and the RHP zero moves higher.
 
 **Why A is wrong:** The LC resonant frequency ω0 = D'/√(LC) depends on D' (duty cycle), L, and C — not on load resistance. Changing load at fixed Vout maintains fixed D in steady state, so ω0 is unchanged.
 
 **Why B is wrong:** The RHP zero ωz_RHP = D'² × R / L INCREASES when R increases (load halves). Halving the load moves the RHP zero AWAY from the crossover, not toward it.
 
-**Why C is wrong:** The DC gain of the control-to-output transfer function is complex and does not simply double when R doubles. Furthermore, the LC pole location is not independent of load (Q changes with R, affecting the shape of the resonance peak even though ω0 location is unchanged).
+**Why C is wrong:** In the ideal CCM model the control-to-output DC gain is Vout/D', independent of R, so it does not double when R doubles. Furthermore, the LC pole location is not independent of load (Q changes with R, affecting the shape of the resonance peak even though ω0 location is unchanged).
 
 ---
 
@@ -600,7 +571,7 @@ m2/m1 = Vout/(Vin - Vout) = D/(1-D)
 At D = 0.5: m2/m1 = 1 (marginal stability, oscillation at fs/2)
 At D > 0.5: m2/m1 > 1 (unstable)
 
-Slope compensation adds an artificial ramp of slope mc to the current sense signal, which makes the effective off-slope larger. The stability condition becomes m2/(m1 + mc) < 1, which is satisfied for mc ≥ m2/2 (ensuring stability for all duty cycles 0 to 1 with mc = m2/2).
+Slope compensation adds an artificial ramp of slope mc to the current sense signal. A perturbation then decays by the factor (m2 - mc)/(m1 + mc) each cycle, so the condition becomes |(m2 - mc)/(m1 + mc)| < 1, i.e. mc > (m2 - m1)/2. Choosing mc ≥ m2/2 satisfies this for every duty cycle from 0 to 1 (and mc = m2 gives deadbeat, one-cycle correction).
 
 **Why A is wrong:** Linearising the modulator gain is a separate effect of slope compensation but not its primary purpose. The modulator gain in PCMC does vary with duty cycle without slope compensation, and adding slope compensation makes it more constant — but the primary motivation for slope compensation is stability, not gain linearisation.
 
@@ -696,15 +667,15 @@ What is the difference between "voltage feedforward" and "feedback" in a switchi
 - C) Feedforward controls the duty cycle proportionally to the input voltage change, pre-compensating for line disturbances before they affect the output
 - D) B and C describe the same thing; both are correct
 
-**Correct answer: D**
+**Correct answer: C**
 
 **Explanation:**
 
-Both B and C describe voltage feedforward correctly from different perspectives:
+C describes voltage feedforward. B describes the right idea (correcting for line changes before the feedback loop has to act) but gets the sensed quantity wrong: feedforward measures the INPUT voltage, not the output voltage. Sensing the output voltage is what feedback does. So B is wrong, and therefore D is wrong too.
 
-**The concept (B):** When the input voltage changes (e.g., Vin steps up 20%), the output would transiently rise before the feedback loop responds. Voltage feedforward detects the Vin change and pre-adjusts the duty cycle immediately — before the output has changed. The feedback loop then only needs to correct the residual error. This dramatically improves input-to-output transient response (audio susceptibility).
+**The concept:** When the input voltage changes (e.g., Vin steps up 20%), the output would transiently rise before the feedback loop responds. Voltage feedforward detects the Vin change and pre-adjusts the duty cycle immediately — before the output has changed. The feedback loop then only needs to correct the residual error. This dramatically improves input-to-output transient response (audio susceptibility).
 
-**The implementation (C):** For a buck converter, Vout = D × Vin. To maintain constant Vout when Vin changes, the duty cycle must adjust inversely: D_new = Vout / Vin_new. If Vin increases 20%, D must decrease by 20%. Voltage feedforward accomplishes this by modifying the PWM ramp height proportional to Vin (so the duty cycle at the same comparator threshold automatically scales inversely with Vin).
+**The implementation:** For a buck converter, Vout = D × Vin. To maintain constant Vout when Vin changes, the duty cycle must adjust inversely: D_new = Vout / Vin_new. If Vin increases 20%, D must decrease by 20%. Voltage feedforward accomplishes this by modifying the PWM ramp height proportional to Vin (so the duty cycle at the same comparator threshold automatically scales inversely with Vin).
 
 **Why feedforward matters:**
 - Without feedforward: a 20% Vin step causes a brief output disturbance; the feedback loop corrects it over several switching cycles (time = 1/(2π × fc))
@@ -723,9 +694,9 @@ In practice, feedforward is implemented by:
 What is the "Nyquist criterion" as applied to power converter control stability?
 
 - A) The open-loop gain must be less than unity at all frequencies above the Nyquist frequency
-- B) A system with a closed-loop pole in the right half of the s-plane is unstable, and the Nyquist plot of the open-loop transfer function can identify this without finding the poles explicitly
+- B) A closed-loop system is stable if the Nyquist plot of the open-loop transfer function stays inside the unit circle
 - C) The switching frequency must be at least twice the closed-loop bandwidth
-- D) The number of unstable open-loop poles must equal the number of clockwise encirclements of (-1, 0) in the Nyquist plot
+- D) For stability, the number of counter-clockwise encirclements of (-1, 0) by the open-loop Nyquist plot must equal the number of open-loop poles in the right half-plane
 
 **Correct answer: D**
 
@@ -751,7 +722,7 @@ The power of the Nyquist criterion is that it handles non-minimum-phase systems 
 
 **Why A is wrong:** This describes a sampling theorem constraint (signal content above Nyquist), not the Nyquist stability criterion. The two "Nyquist" concepts are completely separate.
 
-**Why B is wrong:** This is a correct statement about closed-loop stability but not the Nyquist criterion. The Nyquist criterion is specifically about counting encirclements of (-1,0) in the Nyquist plot to determine stability without explicitly computing closed-loop poles.
+**Why B is wrong:** Staying inside the unit circle (|T| < 1 everywhere) is sufficient for stability (the small-gain theorem) but is not the Nyquist criterion, and it is far too restrictive: every useful control loop has |T| > 1 at low frequency. The Nyquist criterion counts encirclements of (-1, 0).
 
 **Why C is wrong:** This is the Shannon-Nyquist sampling theorem (sampling frequency > 2 × signal bandwidth). Again unrelated to the Nyquist stability criterion.
 
@@ -803,4 +774,4 @@ At PM = 70°, the damping ratio of the dominant closed-loop poles is approximate
 
 *End of Quiz — Control Theory*
 
-**Answer Key:** 1-C, 2-B, 3-B, 4-C, 5-B, 6-B, 7-B, 8-B, 9-B, 10-A, 11-A, 12-B, 13-D, 14-D, 15-B, 16-B, 17-C, 18-D, 19-D, 20-B
+**Answer Key:** 1-B, 2-B, 3-B, 4-C, 5-B, 6-B, 7-B, 8-B, 9-B, 10-A, 11-A, 12-B, 13-D, 14-D, 15-B, 16-B, 17-C, 18-C, 19-D, 20-B

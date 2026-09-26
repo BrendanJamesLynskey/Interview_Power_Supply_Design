@@ -15,7 +15,7 @@ An inductor core has an AL value of 2500 nH/turn². How many turns are needed to
 - C) 6 turns
 - D) 25 turns
 
-**Correct answer: B**
+**Correct answer: A**
 
 **Explanation:**
 
@@ -31,14 +31,6 @@ Converting units: AL = 2500 nH/turn² = 2500 × 10⁻⁹ H/turn², L = 10µH = 1
 N = sqrt(10,000 nH / 2500 nH/turn²) = sqrt(4) = 2 turns
 ```
 
-Wait — that gives 2 turns, not 4. Let me recheck.
-
-N² = L/AL = 10,000/2500 = 4 → N = 2.
-
-**Answer A (2 turns) is correct by this calculation.** Answer B is wrong.
-
-*Correction: The correct answer is A (2 turns). This question as written has a mathematical error in the keyed answer. The derivation: N = sqrt(10µH / 2500nH) = sqrt(4) = 2 turns.*
-
 **Important formula to remember:**
 ```
 L = AL × N²    →    N = sqrt(L / AL)
@@ -49,8 +41,6 @@ L = AL × N²    →    N = sqrt(L / AL)
 **Why C is wrong:** N = 6 gives L = 2500 × 36 = 90µH.
 
 **Why D is wrong:** N = 25 gives L = 2500 × 625 = 1,562,500 nH ≈ 1.56mH, far too large.
-
-*Correct answer: A (2 turns)*
 
 ---
 
@@ -227,9 +217,9 @@ In a DCM flyback (or at boundary), the magnetising current starts at zero and ra
 
 The question asks for peak magnetising current assuming the converter starts each cycle from zero (DCM or boundary mode). The peak is 0.9A.
 
-**Why A is wrong:** 0.45A would result from a calculation error: ΔI = D × Vin / (Lm × fsw) = 0.45 × 100 / (500µ × 100k) = 45/50 = 0.9A... Actually D × Vin / Lm / fsw = 0.45 × 100 / 500µ / 100k = 45 / 50 = 0.9A. 0.45A would arise from using ton/2 or Vin/2 in error.
+**Why A is wrong:** 0.45A is half the correct value; it would arise from using ton/2 or Vin/2 in error.
 
-**Why C is wrong:** 1.8A would arise from using the full period instead of just the on-time: ΔI = Vin × Tsw / Lm = 100 × 10µs / 500µH = 2A. Or from a factor-of-2 error somewhere.
+**Why C is wrong:** 1.8A is double the correct value (a factor-of-2 error). Using the full period instead of the on-time would give Vin × Tsw / Lm = 100 × 10µs / 500µH = 2A.
 
 **Why D is wrong:** The peak magnetising current is determined by the primary-side voltage and the magnetising inductance on the primary side. The turns ratio determines how this magnetising current maps to secondary-side quantities, but the magnetising current itself is a primary-side quantity that can be calculated from Vin, D, fsw, and Lm. No turns ratio needed.
 
@@ -267,7 +257,7 @@ If the wire diameter is much larger than 2δ (twice the skin depth = skin layer 
 
 For a round wire of diameter d:
 - If d << 2δ: RAC ≈ RDC (full cross-section conducts)
-- If d >> 2δ: RAC ≈ RDC × (d / (2δ)) (resistance proportional to surface area only)
+- If d >> 2δ: RAC ≈ RDC × d / (4δ) (current confined to a surface annulus of area ≈ π × d × δ, against π × d² / 4 at DC)
 
 **Design rule:** Choose wire diameter ≤ 2δ at the operating frequency to keep RAC ≈ RDC. At 400kHz: use wire ≤ 0.21mm diameter (approximately AWG 33). For higher current, parallel multiple thin strands (or use Litz wire).
 
@@ -285,10 +275,10 @@ A buck converter operates at 300kHz with Vin = 48V and Vout = 12V. The inductor 
 
 - A) 8.33 V·µs
 - B) 25 V·µs
-- C) 12 V·µs
+- C) 30 V·µs
 - D) 40 V·µs
 
-**Correct answer: A**
+**Correct answer: C**
 
 **Explanation:**
 
@@ -303,40 +293,17 @@ On-time: ton = D / fsw = 0.25 / 300kHz = 0.833µs
 
 Volt-seconds = VL_on × ton = 36V × 0.833µs = 30 V·µs
 
-Hmm, none of the options match exactly. Let me recalculate with the formula:
-
-Volt-seconds = (Vin - Vout) × D / fsw = 36 × 0.25 / 300,000 = 9 / 300,000 = 30×10⁻⁶ = 30 V·µs
-
-Still not matching. The question may intend Vout × (1-D) / fsw (the off-time volt-second product):
-
-Volt-seconds (off-time) = Vout × (1-D) / fsw = 12 × 0.75 / 300k = 9/300k = 30µs × 1V = 30 V·µs
-
-Both must be equal (volt-second balance), and both give 30 V·µs.
-
-For option A = 8.33 V·µs: This would be Vout × ton = 12 × 0.833µs... no.
-Or: Vin × ton / something.
-
-Actually: Vout / fsw = 12 / 300,000 = 40×10⁻⁶ / 1... Hmm.
-
-12V / 300kHz = 40µV·s... = 40 V·µs? No, 12/300,000 = 4×10⁻⁵ V·s = 40 V·µs.
-
-Let me try option D: 40 V·µs ≠ 30 V·µs from calculation.
-
-*Note: The correct answer by calculation is 30 V·µs, which is not one of the listed options. This is an error in the question. The volt-second product is:*
+Check with the off-time (volt-second balance): Vout × (1-D) / fsw = 12 × 0.75 / 300kHz = 30 V·µs. The two must be equal, and they are.
 
 ```
 λ = (Vin - Vout) × ton = (Vin - Vout) × D / fsw = 36V × 0.25 / 300kHz = 30 V·µs
 ```
 
-**For interview preparation, use the formula and show your work.** The key point: volt-seconds determines the flux swing in the core (ΔB = λ / (N × Ae)), which determines both inductance and core loss.
+The key point: the volt-seconds determine the flux swing in the core (ΔB = λ / (N × Ae)), which sets both the turns needed and the core loss. The inductance value (10µH) is not needed to find λ; it sets the ripple current, ΔI = λ / L = 3A.
 
-**Why the options matter conceptually:**
-- A (8.33): Could be Vin × D × (1-D) / fsw / something
-- B (25): Could be Vout × (1/fsw) × D = some incorrect variation
-- C (12): Could be Vout / fsw × something
-- D (40): Closest to Vout / fsw = 12/300k... not matching
+**Why D is wrong:** 40 V·µs = Vin × ton = 48V × 0.833µs — it forgets to subtract Vout from the inductor voltage.
 
-*Correct answer by calculation: 30 V·µs. Examiner's note: verify options before use.*
+**Why A and B are wrong:** they do not follow from volt-second balance for these conditions (8.33 V·µs would be 10V × ton, and 25 V·µs would be 30V × ton).
 
 ---
 
@@ -363,7 +330,7 @@ In Litz wire, each strand is thin (diameter < 2δ), so current distributes unifo
 
 The result: for the same total copper area, Litz wire has lower AC resistance than solid wire at high frequency.
 
-**Example:** At 200kHz, δ = 148µm. A 1mm solid wire (diameter >> 2δ) has RAC ≈ 3.4 × RDC. Replace with Litz of 36 strands × AWG 40 (79µm diameter, well within 2δ): RAC ≈ 1.05 × RDC. Factor of ~3× reduction in AC resistance.
+**Example:** At 200kHz, δ = 148µm. A 1mm solid wire (d/δ ≈ 6.8) has RAC ≈ (d/(4δ) + 0.25) × RDC ≈ 1.9 × RDC from skin effect alone. The same copper area (0.79mm²) in Litz needs about 157 strands of AWG 40 (79µm diameter, well within 2δ), giving RAC ≈ 1.05 × RDC — about 1.8× lower AC resistance, before counting proximity effect, which usually makes the advantage of Litz in a multi-layer winding much larger.
 
 **Why A is wrong:** Litz wire is significantly more expensive than solid wire due to the complex manufacturing process (stranding, twisting, applying individual insulation to each strand, then bundling). Cost is a disadvantage of Litz wire.
 
@@ -392,16 +359,16 @@ A DC blocking capacitor in series with the primary winding prevents DC current f
 
 When switch 1 is on slightly longer: capacitor charges slightly positive on one plate. During switch 2's turn, the capacitor voltage subtracts from Vin, reducing the effective volt-seconds for switch 2's half-cycle. The system self-corrects.
 
-The capacitor must be sized to hold the volt-seconds without significant voltage ripple:
+The capacitor must be large enough that the primary current does not charge it by much within one on-time:
 ```
-C = (D × ton × Vin) / ΔV_cap_allowed
+C ≥ I_primary × ton / ΔV_cap_allowed
 ```
 
 Typical: a few µF with adequate voltage rating.
 
 **Why A is wrong:** Separating primary and secondary on different core legs (as in some E-I or planar designs) does not prevent flux imbalance in the primary. The two primary half-windings still apply volt-seconds to a shared magnetic circuit.
 
-**Why C is wrong:** An air gap increases the coercive force and makes the core harder to drive into saturation (requires more magnetomotive force). However, it does not prevent flux accumulation — it only raises the threshold at which saturation occurs. The flux imbalance mechanism is unchanged; saturation just occurs at a higher peak magnetising current. An air gap also reduces inductance and increases magnetising current ripple.
+**Why C is wrong:** An air gap lowers the effective permeability, so more magnetomotive force (magnetising current) is needed to reach saturation. However, it does not prevent flux accumulation — it only raises the threshold at which saturation occurs. The flux imbalance mechanism is unchanged; saturation just occurs at a higher peak magnetising current. An air gap also reduces inductance and increases magnetising current ripple.
 
 **Why D is wrong:** The core geometry (toroidal vs. E-core) affects winding ease, leakage inductance, and EMI characteristics. It does not address the fundamental volt-second imbalance that drives flux walking. Toroidal cores are actually harder to wind balanced push-pull primaries on, which can worsen imbalance.
 
@@ -665,11 +632,14 @@ A Boucherot (or RC snubber) cell consists of a resistor R_s and capacitor C_s in
 - C_s resonates with Ll to reduce the peak voltage
 - R_s damps the oscillation by absorbing energy
 
-Energy dissipated per cycle: E_s = ½ × C_s × V_clamp² × fsw (approximately)
-
-This is a direct efficiency penalty. For example: C_s = 1nF, V_clamp = 50V, fsw = 200kHz:
+R_s dissipates about ½ × C_s × V² each time C_s charges and again each time it discharges, so the snubber power is approximately:
 ```
-P_snubber = ½ × 1nF × 50² × 200kHz = ½ × 1e-9 × 2500 × 200e3 = 0.25W
+P_snubber ≈ C_s × V² × fsw
+```
+
+This is a direct efficiency penalty. For example: C_s = 1nF, V = 50V, fsw = 200kHz:
+```
+P_snubber = 1nF × 50² × 200kHz = 1e-9 × 2500 × 200e3 = 0.5W
 ```
 
 Design choice: make C_s large enough to adequately clamp the ring, but not so large that snubber loss is excessive. R_s is chosen to damp the ring: R_s ≈ sqrt(Ll_sec / C_s).
@@ -740,25 +710,25 @@ A coupled inductor (two-phase buck converter) uses two inductors wound on the sa
 
 In a two-phase interleaved buck with inversely coupled inductors (coupling coefficient k < 0 by convention for opposing winds):
 
-**Ripple (steady-state):** The effective inductance seen by the current ripple is:
-```
-L_ripple = L × (1 - k)    (for k negative, meaning opposing flux)
-```
+Write the mutual inductance as M = -α × L, with 0 < α < 1 for inverse coupling (Wong, Xu and Lee, IEEE Trans. Power Electronics, 2001).
 
-With k = -1 (perfect coupling): L_ripple = 2L → high inductance, small ripple. This is the "steady-state" advantage.
-
-**Transient:** During a sudden load step, both phases must respond simultaneously. The transient inductance (inductance seen during a step that affects both phase currents equally) is:
+**Transient:** During a load step both phase currents change together, and the inductance they see is:
 ```
-L_transient = L × (1 + k)    (for k negative)
+L_transient = L + M = L × (1 - α)
 ```
 
-With k = -1: L_transient = 0! This means the inductor presents no impedance to a simultaneous step in both phase currents — the current rises as fast as the switch and duty cycle allow, limited only by parasitics.
+**Ripple (steady-state):** For D < 0.5, the equivalent inductance that sets each phase's current ripple is:
+```
+L_ss = L × (1 - α²) / (1 - α × D/(1-D))
+```
 
-This combination gives coupled inductors an advantage over uncoupled: ripple is small (high L_ripple) and transient response is fast (low L_transient). Decoupling these two behaviours (which are linked in a single uncoupled inductor) is the primary benefit.
+Example, α = 0.8 and D = 0.25: L_transient = 0.2L, while L_ss = 0.36L / 0.733 = 0.49L. The ripple sees 2.5× the inductance that limits the transient. An uncoupled inductor has L_ss = L_transient, so to get the same ripple it would need to be 0.49L and would slow the transient by the same 2.5×. (As α → 1, both inductances fall toward zero, so the coupling is chosen at an intermediate value.)
+
+This decoupling of ripple inductance from transient inductance is the primary benefit.
 
 **Practical realisation:** A 4-layer or 8-layer PCB planar coupled inductor, or a toroidal core with bifilar winding (two wires wound simultaneously but with opposite current direction), or a specially configured EE core with shared center leg.
 
-**Why A is wrong:** The inductance for current ripple is increased (good), but the transient inductance is decreased. The statement "doubled" is partially correct for ripple but wrong for transient. The benefit is the DIFFERENCE between steady-state and transient inductance, not a simple doubling.
+**Why A is wrong:** Neither inductance is doubled. Inverse coupling lowers the inductance each phase sees; the benefit is the RATIO of steady-state to transient inductance, not a larger inductance.
 
 **Why C is wrong:** The fluxes from the two phases partially cancel in the core, but not completely (because the two phases carry slightly different instantaneous currents due to ripple). Even if the DC fluxes cancelled perfectly, the AC flux (from ripple) still exists and causes core loss. Coupled inductors do benefit from reduced flux swing (which reduces core loss), but zero core loss is not achievable.
 
@@ -816,8 +786,4 @@ Given a target B_peak, current density J, and fill factor ku, calculate the requ
 
 *End of Quiz — Magnetics Design*
 
-**Answer Key:** 1-A*, 2-C, 3-A, 4-B, 5-B, 6-B, 7-B, 8-A*, 9-C, 10-B, 11-D, 12-B, 13-B, 14-B, 15-B, 16-C, 17-A, 18-C, 19-B, 20-B
-
-*Q1 note: The correct answer is A (2 turns) despite B being marked as the intended answer in the original keying — see explanation for the derivation confirming N = 2.*
-
-*Q8 note: Calculated value (30 V·µs) does not match any option precisely — see explanation. State the formula and calculation in an interview.*
+**Answer Key:** 1-A, 2-C, 3-A, 4-B, 5-B, 6-B, 7-B, 8-C, 9-C, 10-B, 11-D, 12-B, 13-B, 14-B, 15-B, 16-C, 17-A, 18-C, 19-B, 20-B

@@ -58,7 +58,7 @@ The flyback converter uses a coupled inductor (flyback transformer) with separat
 
 ## Q3
 
-A boost converter operates at D = 0.8. The output power is 100W. Ignoring losses, what is the average input current?
+A boost converter operates from Vin = 20V at D = 0.8. The output power is 100W. Ignoring losses, what is the average input current?
 
 - A) 0.5A
 - B) 1A
@@ -69,33 +69,22 @@ A boost converter operates at D = 0.8. The output power is 100W. Ignoring losses
 
 **Explanation:**
 
-For an ideal boost converter: Vout = Vin / (1 - D), so Vin = Vout × (1 - D) = Vout × 0.2.
+For an ideal boost converter: Vout = Vin / (1 - D) = 20 / 0.2 = 100V.
 
-Conservation of power: Pin = Pout = 100W (ideal).
+Conservation of power (ideal): Pin = Pout = 100W, so
 
-Iin = Pin / Vin = 100 / (Vout × 0.2)
+```
+Iin = Pin / Vin = 100W / 20V = 5A
+Iout = Pout / Vout = 100W / 100V = 1A    (check: Iin = Iout / (1-D) = 1 / 0.2 = 5A)
+```
 
-Also, Vout must be provided: if D = 0.8 and, for example, Vin = 10V, then Vout = 10/0.2 = 50V.
-
-Iin = 100W / 10V = 10A ... but the question doesn't specify Vin explicitly.
-
-Using the ideal relation: Iin_avg = Iout / (1-D) = Iout / 0.2 = 5 × Iout.
-
-Iout = Pout / Vout = 100 / 50 = 2A → Iin = 2A / 0.2 = 10A.
-
-Wait — re-reading the question, we need Vin. The question gives only Pout and D. Without Vin, we cannot determine a numerical current. However, if the question implies Vout = 100V (a common convention when only percentage info given):
-
-Iin = Pout / Vin. With D=0.8 and Vin=20V: Vout=100V, Iout=1A, Iin=5A. Answer C = 5A.
-
-**Why this answer is 5A:** Assuming Vin = 20V (giving Vout = 100V from D=0.8): Iout = 100W/100V = 1A, Iin = Pout/Vin = 100W/20V = 5A. The boost converter steps up voltage and steps down current; high duty cycle means very high input current relative to output.
+The boost converter steps up voltage and steps down current; at high duty cycle the input current is large relative to the output current.
 
 **Why A is wrong:** 0.5A would imply Vin = 200V — inconsistent with D = 0.8 boost ratio.
 
 **Why B is wrong:** 1A = Iout, not Iin. At D = 0.8, the converter amplifies current by 1/(1-D) = 5×.
 
-**Why D is wrong:** 2A corresponds to Vin = 50V → Vout = 250V (D = 0.8), giving Iout = 0.4A — inconsistent.
-
-*Examiner note: This question is best paired with a specified Vin. The intended assumption is Vin=20V, Vout=100V.*
+**Why D is wrong:** 2A would need Vin = 50V, not the 20V given.
 
 ---
 
@@ -164,29 +153,18 @@ A full-bridge converter compared to a half-bridge converter of the same output p
 
 **Explanation:**
 
-Both full-bridge and half-bridge operate the transformer between +Vin and -Vin (full-bridge) or between +Vin/2 and -Vin/2 (half-bridge).
+A full-bridge applies ±Vin to the transformer primary; a half-bridge applies only ±Vin/2 (the other end of the primary sits at the capacitor-divider midpoint).
 
-- **Peak switch voltage:** Both full-bridge and half-bridge switches block Vin (full-bridge) or Vin/2 (half-bridge). So a full-bridge has HIGHER peak switch voltage than half-bridge...
+- **Peak switch voltage:** the same in both. Each half-bridge switch is in series with the other across the full bus, so when one is on, the other blocks Vin. In a full-bridge each switch likewise blocks Vin.
+- **Switch current:** for the same output power, the full-bridge primary sees twice the voltage, so it carries half the primary current (with the turns ratio adjusted to give the same Vout). Each full-bridge switch therefore carries half the current of a half-bridge switch.
 
-Re-examining: in a full-bridge, all four switches block Vin (the full DC bus). In a half-bridge, the two switches share the bus, each blocking only Vin/2 due to the capacitive voltage divider on the input.
+So the full-bridge uses four switches instead of two, each with the same voltage stress and half the current. This is why full-bridges are used at higher power.
 
-So correct comparison (full-bridge vs half-bridge):
-- Full-bridge switch peak voltage = Vin
-- Half-bridge switch peak voltage = Vin/2
-
-For the same Vin and output power, the full-bridge drives the full Vin across the primary, so the transformer primary sees ±Vin. The half-bridge primary sees ±Vin/2. To get the same Vout, full-bridge needs fewer turns (by 2:1) than half-bridge, or alternatively has the same turns but generates twice the output voltage for the same turns ratio.
-
-If same turns ratio and same Vout: full-bridge primary voltage = Vin, current = Pout/(Vin×η). Half-bridge primary voltage = Vin/2, current = 2×Pout/(Vin×η). Same power but half the voltage means twice the primary current in the half-bridge.
-
-**Correct interpretation for this question:** Full-bridge vs. half-bridge at same Vout and same output power: full-bridge switches handle the same voltage as half-bridge (Vin for full-bridge, Vin/2 for half-bridge with cap divider — they're different), but the **full-bridge switches carry half the primary current** compared to half-bridge at same output power if the turns ratios are adjusted.
-
-**The most commonly tested answer in interviews:** A full-bridge uses four switches instead of two, so each switch handles only half the current (at same power, same Vin), but the same voltage stress. Answer C is the intended correct response.
-
-**Why A is wrong:** The full-bridge does not have half the peak switch voltage — in fact, full-bridge switches block the full Vin, while half-bridge switches block only Vin/2. The voltage stress relationship is the opposite.
+**Why A is wrong:** The full-bridge does not have half the peak switch voltage; switches in both topologies block Vin.
 
 **Why B is wrong:** If the transformer has the same turns, the full-bridge delivers twice the volt-seconds per half cycle compared to half-bridge (since it swings ±Vin vs ±Vin/2), resulting in twice the output voltage — the turns ratio would need adjustment.
 
-**Why D is wrong:** This reverses the voltage comparison and has the current comparison backward.
+**Why D is wrong:** The switch voltage stress is the same (Vin) in both topologies, not doubled.
 
 ---
 
@@ -256,10 +234,10 @@ A buck converter is designed to always operate in CCM. What is the minimum induc
 
 - A) 7.2µH
 - B) 18µH
-- C) 36µH
+- C) 45µH
 - D) 72µH
 
-**Correct answer: B**
+**Correct answer: C**
 
 **Explanation:**
 
@@ -278,33 +256,14 @@ L = (Vin - Vout) × D / (ΔIL × fsw)
 L = 36 × 0.25 / (2 × 100k) = 9 / 200k = 45µH
 ```
 
-Hmm — this gives 45µH. Let me recheck.
-
-```
-L = (Vin - Vout) × ton / ΔIL
-ton = D / fsw = 0.25 / 100,000 = 2.5µs
-L = 36V × 2.5µs / 2A = 90µH / 2 = 45µH
-```
-
-None of the given answers match exactly. Using the standard formula:
+So L_min = 45µH (option C). Equivalently:
 
 ```
 L_min = (1-D) × Vout / (2 × Iout_min × fsw)
-L_min = (1-0.25) × 12 / (2 × 1 × 100k)
-L_min = 0.75 × 12 / 200k = 9/200k = 45µH
+      = 0.75 × 12 / (2 × 1 × 100,000) = 45µH
 ```
 
-The closest answer is **C (36µH)** if Iout_min is defined differently, or **B (18µH)** if ΔIL = Iout_min (not 2×). Different textbooks define the CCM boundary differently.
-
-Using ΔIL/2 = Iout_min → ΔIL = 2×Iout_min = 2A, L = 45µH. Answer B = 18µH corresponds to ΔIL = 5A (50% ripple ratio at Iout_min = 1A).
-
-*Note: This question has an arithmetic inconsistency in the provided options. The correct value per volt-second balance is 45µH. In interviews, always state your formula before calculating.*
-
-**The correct derivation to demonstrate:**
-```
-L_crit = Vout × (1-D) / (2 × Iout_min × fsw)
-       = 12 × 0.75 / (2 × 1 × 100,000) = 45µH
-```
+**Why A, B and D are wrong:** they correspond to other ripple assumptions. With L = 36V × 2.5µs / ΔIL, 18µH gives ΔIL = 5A (the boundary would then be at 2.5A, 25% of full load), 72µH gives ΔIL = 1.25A, and 7.2µH gives ΔIL = 12.5A (DCM even at full load).
 
 ---
 
@@ -410,7 +369,7 @@ A boost converter draws current from the input throughout the entire switching c
 
 A buck-boost draws input current only during the switch on-time (pulsating input current). During the off-time, input current is zero. This pulsating current makes it harder to achieve low THD at the input, because the current waveform is inherently chopped. Large input capacitors are needed to filter the pulses, which reduces the effective power factor.
 
-**Why A is wrong:** Boost converters DO have a right-half-plane zero (this is one of their control challenges, as discussed in stability topics). The RHP zero limits the achievable closed-loop bandwidth. It does not disappear in the boost topology — it appears in the control-to-output transfer function at ωz_RHP = Vout² / (Iout × L × Vin) in CCM.
+**Why A is wrong:** Boost converters DO have a right-half-plane zero (this is one of their control challenges, as discussed in stability topics). The RHP zero limits the achievable closed-loop bandwidth. It does not disappear in the boost topology — it appears in the control-to-output transfer function at ωz_RHP = (1-D)² × R / L = Vin² / (Vout × Iout × L) in CCM.
 
 **Why C is wrong:** Both boost and buck-boost operate over the same practical duty cycle range (0 to ~0.9). The boost voltage conversion ratio is 1/(1-D) and the buck-boost is D/(1-D). At D = 0.8, boost gives 5× and buck-boost gives 4× step-up. There is no fundamental advantage for the boost in maximum duty cycle.
 
@@ -469,7 +428,7 @@ In practice, small differences always exist:
 - Timing mismatch: propagation delays in the gate driver may cause one switch to have a slightly longer on-time
 - Saturation voltage differences between devices
 
-If half-cycle 1 applies slightly more volt-seconds than half-cycle 2, the flux doesn't fully reset. Over many cycles, the flux walks (accumulates) in one direction. As the flux approaches B_sat, magnetising current spikes, Rds_on of the switch increases due to saturation, which paradoxically reduces the volt-seconds (self-limiting to some extent), but in hard-switched designs the current spike can destroy the switch before this equilibrium is reached.
+If half-cycle 1 applies slightly more volt-seconds than half-cycle 2, the flux doesn't fully reset. Over many cycles, the flux walks (accumulates) in one direction. As the flux approaches B_sat, magnetising current spikes; the larger current raises the voltage drop across the switch (and, for MOSFETs, its temperature and Rds_on), which reduces the applied volt-seconds (self-limiting to some extent), but in hard-switched designs the current spike can destroy the switch before this equilibrium is reached.
 
 **Mitigation techniques:**
 - Current-mode control: the peak current limit prevents saturation by shutting off each switch independently if current exceeds the limit
@@ -528,26 +487,21 @@ What is the voltage stress on each switch in an ideal half-bridge converter?
 - C) Vin / 2
 - D) Vin × n (where n is the transformer turns ratio)
 
-**Correct answer: C**
+**Correct answer: B**
 
 **Explanation:**
 
-In a half-bridge converter, the DC bus is split by two capacitors (or a capacitive voltage divider). The midpoint sits at Vin/2. The two switches (Q1 and Q2) alternate connecting this midpoint to either the positive or negative bus rail.
+In a half-bridge converter, the DC bus is split by two capacitors; their midpoint sits at Vin/2 and is the return for one end of the transformer primary. The two switches Q1 (upper) and Q2 (lower) are in series across the bus, and their junction drives the other end of the primary.
 
-When Q1 is on: midpoint is pulled to +Vin. Q2 is off and must block the voltage from +Vin to the midpoint, which is Vin/2 (not full Vin, because the bottom capacitor holds the midpoint at Vin/2 through Q2's body... wait).
+When Q1 is on, the switch node is at Vin and Q2 (drain at the switch node, source at the bus return) blocks Vin. When Q2 is on, the switch node is at 0V and Q1 blocks Vin. So each switch blocks the full bus voltage, Vin (plus any ringing).
 
-More precisely: with both capacitors at Vin/2 each:
-- Q1 on: V_midpoint = Vin. Q2 sees V_drain = Vin, V_source = midpoint ≈ Vin/2. So Q2 blocks Vin - Vin/2 = Vin/2? No, Q2's source is at the midpoint (Vin/2 when Q1 is on, pulling it high) — actually Q2's source is at ground (return bus), its drain is at the midpoint.
+What the capacitor divider halves is the voltage across the transformer primary (±Vin/2), not the switch stress. The half-bridge's advantage over a push-pull (whose switches block 2 × Vin) is exactly this: switch stress of Vin rather than 2 × Vin.
 
-Correct analysis: Q1 connects Vin to the midpoint (primary side upper). Q2 connects midpoint to GND (lower). When Q1 is on, midpoint = Vin. Q2 is off, its drain is at midpoint = Vin, source at GND = 0. Q2 blocks Vin/2? No — Q2 blocks midpoint - GND = Vin.
+**Why A is wrong:** 2 × Vin is the switch stress of a push-pull converter (or a single-switch forward with a 1:1 reset winding), not a half-bridge.
 
-Standard answer from textbooks: In a half-bridge, each switch blocks Vin/2. This is because the capacitive divider "absorbs" half the bus voltage. This is the conventional result and a key advantage of half-bridge vs. full-bridge.
+**Why C is wrong:** Vin/2 is the voltage across the transformer primary, not across the off switch.
 
-**Why A is wrong:** 2×Vin is the voltage stress for a flyback converter switch in some configurations. In a half-bridge, the capacitive divider prevents the switch from ever seeing more than Vin/2 (plus any resonant overshoot/ringing).
-
-**Why B is wrong:** Vin is the switch voltage for a full-bridge converter (each switch blocks the full DC bus). The half-bridge's capacitive input divider is specifically used to halve this stress.
-
-**Why D is wrong:** The turns ratio affects secondary-side quantities and the reflected voltage from the transformer, but the primary switch voltage stress in a half-bridge is Vin/2 regardless of the turns ratio.
+**Why D is wrong:** The turns ratio affects secondary-side quantities; the primary switch stress in a half-bridge is Vin regardless of the turns ratio.
 
 ---
 
@@ -576,8 +530,10 @@ The gain of the boost converter dVout/dD = Vin/(1-D)² which at D=0.9 is 10/(0.0
 Furthermore, at high duty cycle, the parasitics (Rds_on, diode Vf, inductor DCR) cause the actual gain to deviate significantly from the ideal:
 
 ```
-Vout_actual / Vin = (1 - D_eff) / [(1-D)² × R_total + (1-D)]
+Vout / Vin = [1 / (1-D)] × 1 / (1 + R_L / ((1-D)² × R_load))
 ```
+
+(R_L = total series resistance of inductor and switches; R_load = load resistance.)
 
 In practice, the "ideal" 10× boost at D=0.9 might only achieve 7× or 8× due to parasitics, and the actual D required for regulation is even higher, pushing further into the sensitive region. The control loop becomes hard to stabilise (very high plant gain, RHP zero frequency drops proportional to (1-D)², small perturbations cause large output changes).
 
@@ -624,7 +580,7 @@ Both converters have the same voltage conversion ratio: Vout/Vin = D/(1-D).
 
 ## Q20
 
-In a forward converter operating at D = 0.45, what is the minimum required turns ratio for the reset winding (Nreset : Nprimary) to ensure core reset within the off-time?
+In a single-switch forward converter operating at D = 0.45, which reset-winding turns ratio (Nreset : Nprimary) is the standard choice that resets the core within the off-time with margin?
 
 - A) 1:1
 - B) 1:2
@@ -674,6 +630,4 @@ A 1:1 turns ratio (Nreset/Np = 1.0) satisfies this constraint: 1.0 ≤ 1.22. The
 
 *End of Quiz — Topology Fundamentals*
 
-**Answer Key:** 1-B, 2-B, 3-C, 4-B, 5-C, 6-C, 7-D, 8-C, 9-B*, 10-B, 11-B, 12-B, 13-B, 14-B, 15-B, 16-B, 17-C, 18-B, 19-B, 20-A
-
-*Q9 note: The calculation yields 45µH which does not match any option exactly; see explanation. In an actual interview, present the derivation and state the calculated value.
+**Answer Key:** 1-B, 2-B, 3-C, 4-B, 5-C, 6-C, 7-D, 8-C, 9-C, 10-B, 11-B, 12-B, 13-B, 14-B, 15-B, 16-B, 17-B, 18-B, 19-B, 20-A
